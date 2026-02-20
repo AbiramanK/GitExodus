@@ -1,0 +1,14 @@
+export interface RepositoryInfo {
+    name: string;
+    path: string;
+    remote_url: string | null;
+    current_branch: string;
+    local_branches: string[];
+    is_dirty: boolean;
+    has_unpushed_commits: boolean;
+}
+
+export interface ScanResult {
+    repositories: RepositoryInfo[];
+    errors: string[];
+}
