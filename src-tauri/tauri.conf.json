@@ -32,30 +32,6 @@
       "icons/icon.ico"
     ],
     "category": "Utility",
-    "copyright": "Copyright © 2026 GitExodus",
-    "deb": {
-      "depends": [
-        "libwebkit2gtk-4.0-37",
-        "librsvg2-common"
-      ]
-    },
-    "dmg": {
-      "background": null,
-      "windowPosition": {
-        "x": 400,
-        "y": 200
-      },
-      "windowSize": {
-        "width": 540,
-        "height": 380
-      },
-      "appPath": null,
-      "linkPath": null
-    },
-    "windows": {
-      "certificateThumbprint": null,
-      "digestAlgorithm": "sha256",
-      "timestampUrl": ""
-    }
+    "copyright": "Copyright © 2026 GitExodus"
   }
 }
