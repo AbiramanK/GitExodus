@@ -13,7 +13,8 @@ pub fn run() {
             scan_repos,
             commit_repo,
             push_repo_command,
-            delete_repo
+            delete_repo,
+            open_folder
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

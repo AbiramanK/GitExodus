@@ -38,3 +38,9 @@ pub async fn push_repo_command(path: String) -> Result<(), String> {
 pub async fn delete_repo(path: String) -> Result<(), String> {
     safe_delete(&PathBuf::from(path)).map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub async fn open_folder(path: String, app: &tauri::AppHandle) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    app.opener().open_path(path, None::<String>).map_err(|e| e.to_string())
+}

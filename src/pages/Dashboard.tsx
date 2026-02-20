@@ -3,8 +3,8 @@ import {
     Table, TableHeader, TableBody, TableRow, TableHead, TableCell, 
     Button, Input, Badge 
 } from '../components/ui/core';
-import { useScanReposQuery, useCommitRepoMutation, usePushRepoMutation, useDeleteRepoMutation } from '../redux/api/v2/gitApi';
-import { Search, RotateCcw, GitCommit, ArrowUpCircle, Trash2 } from 'lucide-react';
+import { useScanReposQuery, useCommitRepoMutation, usePushRepoMutation, useDeleteRepoMutation, useOpenFolderMutation } from '../redux/api/v2/gitApi';
+import { Search, RotateCcw, GitCommit, ArrowUpCircle, Trash2, FolderOpen } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export const Dashboard = () => {
@@ -15,6 +15,7 @@ export const Dashboard = () => {
   const [commitRepo] = useCommitRepoMutation();
   const [pushRepo] = usePushRepoMutation();
   const [deleteRepo] = useDeleteRepoMutation();
+  const [openFolder] = useOpenFolderMutation();
 
   const {
     filteredData,
@@ -30,6 +31,10 @@ export const Dashboard = () => {
 
   const handlePush = (path: string) => {
       pushRepo(path);
+  };
+
+  const handleOpenFolder = (path: string) => {
+      openFolder(path);
   };
 
   const handleDelete = (path: string) => {
@@ -121,6 +126,9 @@ export const Dashboard = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
+                    <Button size="icon" variant="ghost" title="Open Folder" onClick={() => handleOpenFolder(repo.path)}>
+                        <FolderOpen className="h-4 w-4" />
+                    </Button>
                     {repo.is_dirty && (
                         <Button size="icon" variant="ghost" title="Commit" onClick={() => handleCommit(repo.path)}>
                             <GitCommit className="h-4 w-4" />

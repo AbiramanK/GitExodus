@@ -47,6 +47,16 @@ export const gitApi = createApi({
         }
       },
     }),
+    openFolder: builder.mutation<void, string>({
+      queryFn: async (path) => {
+        try {
+          await invoke('open_folder', { path });
+          return { data: undefined };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+    }),
   }),
 });
 
@@ -54,5 +64,6 @@ export const {
     useScanReposQuery, 
     useCommitRepoMutation, 
     usePushRepoMutation, 
-    useDeleteRepoMutation 
+    useDeleteRepoMutation,
+    useOpenFolderMutation
 } = gitApi;

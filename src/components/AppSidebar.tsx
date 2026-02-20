@@ -4,7 +4,7 @@ import { cn } from '../lib/utils';
 
 export const AppSidebar = () => {
   return (
-    <div className="w-64 h-screen border-r bg-card flex flex-col">
+    <div className="w-64 h-screen border-r bg-card flex flex-col sticky top-0 flex-shrink-0">
       <div className="p-6 border-b">
         <h2 className="text-xl font-bold text-primary">GitExodus</h2>
       </div>
