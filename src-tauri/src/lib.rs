@@ -4,12 +4,14 @@ pub mod git_logic;
 pub mod app_discovery;
 pub mod commands;
 
+use tauri::Emitter;
 use commands::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             scan_repos,
             commit_repo,
@@ -20,8 +22,15 @@ pub fn run() {
             open_with,
             get_repo_changes,
             get_file_diff_content,
-            bulk_commit_and_push
+            bulk_commit_and_push,
+            exit_app
         ])
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                window.emit("request-exit", ()).unwrap();
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

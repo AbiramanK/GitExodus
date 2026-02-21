@@ -5,12 +5,21 @@ interface RepoState {
   repositories: RepositoryInfo[];
   isScanning: boolean;
   scanError: string | null;
+  scanRoots: string[];
 }
+
+const STORAGE_KEY = 'git-exodus-scan-roots';
+
+const loadRoots = (): string[] => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  return saved ? JSON.parse(saved) : [];
+};
 
 const initialState: RepoState = {
   repositories: [],
   isScanning: false,
   scanError: null,
+  scanRoots: loadRoots(),
 };
 
 const repoSlice = createSlice({
@@ -23,7 +32,6 @@ const repoSlice = createSlice({
       state.scanError = null;
     },
     addRepo: (state, action: PayloadAction<RepositoryInfo>) => {
-      // Avoid duplicates just in case
       if (!state.repositories.find(r => r.path === action.payload.path)) {
         state.repositories.push(action.payload);
       }
@@ -43,9 +51,26 @@ const repoSlice = createSlice({
     },
     removeRepo: (state, action: PayloadAction<string>) => {
       state.repositories = state.repositories.filter(r => r.path !== action.payload);
+    },
+    addScanRoot: (state, action: PayloadAction<string>) => {
+      if (!state.scanRoots.includes(action.payload)) {
+        state.scanRoots.push(action.payload);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.scanRoots));
+      }
+    },
+    removeScanRoot: (state, action: PayloadAction<string>) => {
+      state.scanRoots = state.scanRoots.filter(r => r !== action.payload);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.scanRoots));
+    },
+    setScanRoots: (state, action: PayloadAction<string[]>) => {
+      state.scanRoots = action.payload;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.scanRoots));
     }
   },
 });
 
-export const { startScan, addRepo, finishScan, setScanError, updateRepo, removeRepo } = repoSlice.actions;
+export const { 
+    startScan, addRepo, finishScan, setScanError, updateRepo, removeRepo, 
+    addScanRoot, removeScanRoot, setScanRoots 
+} = repoSlice.actions;
 export default repoSlice.reducer;

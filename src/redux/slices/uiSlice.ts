@@ -2,10 +2,12 @@ import { createSlice } from '@reduxjs/toolkit';
 
 interface UiState {
   sidebarCollapsed: boolean;
+  currentPage: string;
 }
 
 const initialState: UiState = {
   sidebarCollapsed: false,
+  currentPage: 'dashboard',
 };
 
 const uiSlice = createSlice({
@@ -18,8 +20,11 @@ const uiSlice = createSlice({
     setSidebarCollapsed: (state, action) => {
       state.sidebarCollapsed = action.payload;
     },
+    setCurrentPage: (state, action) => {
+      state.currentPage = action.payload;
+    },
   },
 });
 
-export const { toggleSidebar, setSidebarCollapsed } = uiSlice.actions;
+export const { toggleSidebar, setSidebarCollapsed, setCurrentPage } = uiSlice.actions;
 export default uiSlice.reducer;

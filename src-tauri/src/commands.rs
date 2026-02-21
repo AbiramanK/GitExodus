@@ -5,49 +5,50 @@ use std::path::PathBuf;
 use std::process::Command;
 
 #[tauri::command]
-pub async fn scan_repos(root_path: String, app: tauri::AppHandle) -> Result<(), String> {
+pub async fn scan_repos(root_paths: Vec<String>, app: tauri::AppHandle) -> Result<(), String> {
     use tauri::Emitter;
     use ignore::WalkBuilder;
-    
-    let root = PathBuf::from(root_path);
     
     // Spawn background task
     tokio::spawn(async move {
         let _ = app.emit("scan-started", ());
         
-        let walker = WalkBuilder::new(root)
-            .hidden(false) // We need to see .git
-            .git_ignore(false) 
-            .git_global(false)
-            .git_exclude(false)
-            .filter_entry(|entry| {
-                let path = entry.path();
-                if path.is_dir() {
-                    if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                        if name == "node_modules" || name == ".cache" || name == "target" || name == ".git" && path.parent().is_some() {
-                             return true; 
-                        }
-                        if name == "node_modules" || name == ".cache" || name == "target" {
-                            return false;
+        for root_path in root_paths {
+            let root = PathBuf::from(root_path);
+            let walker = WalkBuilder::new(root)
+                .hidden(false) // We need to see .git
+                .git_ignore(false) 
+                .git_global(false)
+                .git_exclude(false)
+                .filter_entry(|entry| {
+                    let path = entry.path();
+                    if path.is_dir() {
+                        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                            if name == "node_modules" || name == ".cache" || name == "target" || name == ".git" && path.parent().is_some() {
+                                 return true; 
+                            }
+                            if name == "node_modules" || name == ".cache" || name == "target" {
+                                return false;
+                            }
                         }
                     }
-                }
-                true
-            })
-            .build();
+                    true
+                })
+                .build();
 
-        for result in walker {
-            if let Ok(entry) = result {
-                if entry.path().is_dir() {
-                    if let Some(name) = entry.path().file_name().and_then(|n| n.to_str()) {
-                        if name == ".git" {
-                            if let Some(parent) = entry.path().parent() {
-                                match analyze_repo(parent) {
-                                    Ok(info) => {
-                                        let _ = app.emit("repo-detected", info);
-                                    }
-                                    Err(e) => {
-                                        let _ = app.emit("scan-error", format!("Error analyzing {}: {}", parent.display(), e));
+            for result in walker {
+                if let Ok(entry) = result {
+                    if entry.path().is_dir() {
+                        if let Some(name) = entry.path().file_name().and_then(|n| n.to_str()) {
+                            if name == ".git" {
+                                if let Some(parent) = entry.path().parent() {
+                                    match analyze_repo(parent) {
+                                        Ok(info) => {
+                                            let _ = app.emit("repo-detected", info);
+                                        }
+                                        Err(e) => {
+                                            let _ = app.emit("scan-error", format!("Error analyzing {}: {}", parent.display(), e));
+                                        }
                                     }
                                 }
                             }
@@ -160,4 +161,9 @@ pub async fn bulk_commit_and_push(paths: Vec<String>, message: String) -> Result
     let failed = results.iter().filter(|r| !r.success).count();
 
     Ok(BulkResult { results, total, succeeded, failed })
+}
+
+#[tauri::command]
+pub fn exit_app(app_handle: tauri::AppHandle) {
+    app_handle.exit(0);
 }
