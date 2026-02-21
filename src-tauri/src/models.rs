@@ -19,3 +19,15 @@ pub struct AppInfo {
     pub binary: String,
     pub category: String, // "editor", "file-manager", etc.
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GitChange {
+    pub path: String,
+    pub status: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct FileDiff {
+    pub original_content: String,
+    pub modified_content: String,
+}

@@ -17,7 +17,9 @@ pub fn run() {
             delete_repo,
             open_folder,
             get_available_apps,
-            open_with
+            open_with,
+            get_repo_changes,
+            get_file_diff_content
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

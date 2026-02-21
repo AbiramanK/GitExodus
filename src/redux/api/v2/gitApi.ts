@@ -7,6 +7,8 @@ export interface AppInfo {
   category: string;
 }
 
+import { GitChange, FileDiff } from './apiResponse';
+
 export const gitApi = createApi({
   reducerPath: 'gitApi',
   baseQuery: (arg: any) => ({ data: arg }),
@@ -71,6 +73,27 @@ export const gitApi = createApi({
         }
       },
     }),
+    getRepoChanges: builder.query<GitChange[], string>({
+      queryFn: async (path) => {
+        try {
+          const result = await invoke<GitChange[]>('get_repo_changes', { path });
+          return { data: result };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+    }),
+    getFileDiffContent: builder.query<FileDiff, { repoPath: string; filePath: string }>({
+      queryFn: async ({ repoPath, filePath }) => {
+        try {
+          // Tauri commands handle camelCase conversion automatically for arguments
+          const result = await invoke<FileDiff>('get_file_diff_content', { repoPath, filePath });
+          return { data: result };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+    }),
   }),
 });
 
@@ -80,5 +103,7 @@ export const {
     useDeleteRepoMutation,
     useOpenFolderMutation,
     useGetAvailableAppsQuery,
-    useOpenWithMutation
+    useOpenWithMutation,
+    useGetRepoChangesQuery,
+    useGetFileDiffContentQuery
 } = gitApi;

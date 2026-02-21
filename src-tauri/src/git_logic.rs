@@ -1,5 +1,5 @@
-use git2::Repository;
-use crate::models::RepositoryInfo;
+use git2::{Repository, StatusOptions};
+use crate::models::{RepositoryInfo, GitChange, FileDiff};
 use std::path::Path;
 
 pub fn analyze_repo(path: &Path) -> Result<RepositoryInfo, Box<dyn std::error::Error>> {
@@ -114,4 +114,69 @@ pub fn safe_delete(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     
     std::fs::remove_dir_all(path)?;
     Ok(())
+}
+
+pub fn get_repo_changes(path: &Path) -> Result<Vec<GitChange>, Box<dyn std::error::Error>> {
+    let repo = Repository::open(path)?;
+    let mut status_options = StatusOptions::new();
+    status_options.include_untracked(true);
+    let statuses = repo.statuses(Some(&mut status_options))?;
+
+    let mut changes = Vec::new();
+    for entry in statuses.iter() {
+        if let Some(path) = entry.path() {
+            let status_flags = entry.status();
+            let mut status_str = "unknown";
+            
+            if status_flags.contains(git2::Status::WT_NEW) || status_flags.contains(git2::Status::INDEX_NEW) {
+                status_str = "added";
+            } else if status_flags.contains(git2::Status::WT_DELETED) || status_flags.contains(git2::Status::INDEX_DELETED) {
+                status_str = "deleted";
+            } else if status_flags.contains(git2::Status::WT_MODIFIED) || status_flags.contains(git2::Status::INDEX_MODIFIED) {
+                status_str = "modified";
+            }
+            
+            changes.push(GitChange {
+                path: path.to_string(),
+                status: status_str.to_string(),
+            });
+        }
+    }
+    Ok(changes)
+}
+
+pub fn get_file_diff_content(repo_path: &Path, file_path: &str) -> Result<FileDiff, Box<dyn std::error::Error>> {
+    let repo = Repository::open(repo_path)?;
+    
+    // Get modified content directly from working directory
+    let full_file_path = repo_path.join(file_path);
+    let modified_content = std::fs::read_to_string(&full_file_path).unwrap_or_else(|_| "".to_string());
+    
+    // Get original content from HEAD
+    let original_content = if let Ok(head) = repo.head() {
+        if let Ok(tree) = head.peel_to_tree() {
+            if let Ok(entry) = tree.get_path(Path::new(file_path)) {
+                if let Ok(object) = entry.to_object(&repo) {
+                    if let Some(blob) = object.as_blob() {
+                        String::from_utf8_lossy(blob.content()).to_string()
+                    } else {
+                        "".to_string()
+                    }
+                } else {
+                    "".to_string()
+                }
+            } else {
+                "".to_string() // File might be new
+            }
+        } else {
+            "".to_string()
+        }
+    } else {
+        "".to_string()
+    };
+
+    Ok(FileDiff {
+        original_content,
+        modified_content,
+    })
 }

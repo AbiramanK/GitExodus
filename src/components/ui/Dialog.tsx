@@ -7,14 +7,12 @@ const Dialog = ({ open, onOpenChange, children }: { open: boolean, onOpenChange:
   if (!open) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center sm:p-0 p-4">
       <div 
         className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity" 
         onClick={() => onOpenChange(false)}
       />
-      <div className="z-50 w-full max-w-lg scale-100 opacity-100 transition-all">
-        {children}
-      </div>
+      {children}
     </div>,
     document.body
   )
@@ -24,7 +22,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTML
   <div
     ref={ref}
     className={cn(
-      "relative grid w-full gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg",
+      "relative z-50 grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg",
       className
     )}
     {...props}

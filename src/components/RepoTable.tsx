@@ -3,8 +3,9 @@ import {
     Table, TableHeader, TableBody, TableRow, TableHead, TableCell, 
     Badge, Button 
 } from "./ui/core";
-import { GitCommit, ArrowUpCircle, Trash2 } from "lucide-react";
+import { GitCommit, ArrowUpCircle, Trash2, Eye } from "lucide-react";
 import { OpenWithMenu } from "./OpenWithMenu";
+import { Popconfirm } from "./ui/Popconfirm";
 
 interface RepoTableProps {
   data: RepositoryInfo[];
@@ -12,9 +13,10 @@ interface RepoTableProps {
   onCommit: (path: string) => void;
   onPush: (path: string) => void;
   onDelete: (path: string) => void;
+  onViewChanges: (path: string) => void;
 }
 
-export const RepoTable = ({ data, isScanning, onCommit, onPush, onDelete }: RepoTableProps) => {
+export const RepoTable = ({ data, isScanning, onCommit, onPush, onDelete, onViewChanges }: RepoTableProps) => {
   return (
     <div className="rounded-md border bg-card">
         <Table>
@@ -50,14 +52,30 @@ export const RepoTable = ({ data, isScanning, onCommit, onPush, onDelete }: Repo
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
                     <OpenWithMenu path={repo.path} />
+                    <Popconfirm
+                      title="Delete Repository"
+                      description="Are you sure? This cannot be undone."
+                      onConfirm={() => onDelete(repo.path)}
+                      variant="destructive"
+                    >
+                      <Button 
+                          size="icon" 
+                          variant="ghost" 
+                          className="text-muted-foreground hover:text-destructive"
+                          title="Delete"
+                      >
+                          <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </Popconfirm>
                     <Button 
                         size="icon" 
                         variant="ghost" 
-                        onClick={() => onDelete(repo.path)}
-                        className="text-muted-foreground hover:text-destructive"
-                        title="Delete"
+                        onClick={() => onViewChanges(repo.path)}
+                        disabled={!repo.is_dirty}
+                        className="text-muted-foreground hover:text-primary"
+                        title="View Changes"
                     >
-                        <Trash2 className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                     </Button>
                     <Button 
                         size="icon" 

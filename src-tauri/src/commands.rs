@@ -1,5 +1,5 @@
-use crate::models::AppInfo;
-use crate::git_logic::{analyze_repo, commit_all, push_repo, safe_delete};
+use crate::models::{AppInfo, GitChange, FileDiff};
+use crate::git_logic::{analyze_repo, commit_all, push_repo, safe_delete, get_repo_changes as git_get_changes, get_file_diff_content as git_get_diff};
 use crate::app_discovery::get_detected_apps;
 use std::path::PathBuf;
 use std::process::Command;
@@ -96,4 +96,14 @@ pub async fn open_with(path: String, binary: String) -> Result<(), String> {
         .spawn()
         .map_err(|e| format!("Failed to launch application: {}", e))?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_repo_changes(path: String) -> Result<Vec<GitChange>, String> {
+    git_get_changes(&PathBuf::from(path)).map_err(|e: Box<dyn std::error::Error>| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_file_diff_content(repo_path: String, file_path: String) -> Result<FileDiff, String> {
+    git_get_diff(&PathBuf::from(repo_path), &file_path).map_err(|e: Box<dyn std::error::Error>| e.to_string())
 }

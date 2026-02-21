@@ -8,3 +8,12 @@ export interface RepositoryInfo {
     has_unpushed_commits: boolean;
 }
 
+export interface GitChange {
+    path: string;
+    status: string;
+}
+
+export interface FileDiff {
+    original_content: string;
+    modified_content: string;
+}
