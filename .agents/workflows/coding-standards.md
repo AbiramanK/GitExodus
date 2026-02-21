@@ -6,7 +6,7 @@ description: General coding standards and grammar rules for the project
 - **Quality**: Prioritize visual excellence and premium design in all web UI changes.
 - **Language**: Always check the user's grammar, vocabulary, and spelling in their queries.
 - **Tone**: Maintain a helpful, proactive, and friendly collaborative tone.
-- **Commits**: Never execute `git commit` without explicit, direct user permission (e.g. "Yes, commit this"). "LGTM" is not enough.
+- **Commits**: NEVER execute `git commit` unless I explicitly ask you to (e.g., "Commit the changes now"). Never assume permission from general plan approval.
 - **Workflow Maintenance**: If the user modifies a rule or an established procedure during the conversation, you MUST immediately update the relevant workflow file in `.agents/workflows` to ensure persistent momentum.
 - **Testing**: Target at least 80% test coverage for all features. This includes unit tests for core logic, integration tests for API/commands, and E2E tests for main user flows.
 
