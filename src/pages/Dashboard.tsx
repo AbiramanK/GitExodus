@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
@@ -13,6 +13,7 @@ import { Search, RotateCcw } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { homeDir } from '@tauri-apps/api/path';
 import { RepoTable } from '../components/RepoTable';
+import { CommitDialog } from '../components/CommitDialog';
 import { RepositoryInfo } from '../redux/api/v2/apiResponse';
 
 export const Dashboard = () => {
@@ -66,7 +67,7 @@ export const Dashboard = () => {
 
     const promise = setupListeners();
     
-    // Initial scan
+    // Initial scan on app open
     handleScan();
 
     return () => {
@@ -74,8 +75,23 @@ export const Dashboard = () => {
     };
   }, [dispatch]);
 
+  const [commitDialogOpen, setCommitDialogOpen] = useState(false);
+  const [selectedRepo, setSelectedRepo] = useState<{ path: string, name: string } | null>(null);
+
   const handleCommit = (path: string) => {
-      commitRepo({ path, message: "Auto-commit: GitExodus system backup" });
+      const repo = repositories.find(r => r.path === path);
+      if (repo) {
+          setSelectedRepo({ path, name: repo.name });
+          setCommitDialogOpen(true);
+      }
+  };
+
+  const onCommitConfirm = (message: string) => {
+      if (selectedRepo) {
+          commitRepo({ path: selectedRepo.path, message });
+          setCommitDialogOpen(false);
+          setSelectedRepo(null);
+      }
   };
 
   const handlePush = (path: string) => {
@@ -96,7 +112,7 @@ export const Dashboard = () => {
           <h1 className="text-3xl font-bold tracking-tight text-primary">GitExodus</h1>
           <p className="text-muted-foreground">Automated local repository management and cleanup.</p>
         </div>
-        <Button onClick={handleScan} disabled={isScanning}>
+        <Button onClick={handleScan} disabled={isScanning} data-testid="scan-button">
           <RotateCcw className={cn("mr-2 h-4 w-4", isScanning && "animate-spin")} />
           Scan System
         </Button>
@@ -144,6 +160,13 @@ export const Dashboard = () => {
         onCommit={handleCommit}
         onPush={handlePush}
         onDelete={handleDelete}
+      />
+
+      <CommitDialog 
+        isOpen={commitDialogOpen}
+        onOpenChange={setCommitDialogOpen}
+        onConfirm={onCommitConfirm}
+        repoName={selectedRepo?.name || ""}
       />
     </div>
   );

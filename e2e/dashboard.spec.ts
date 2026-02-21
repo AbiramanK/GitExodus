@@ -30,4 +30,18 @@ test.describe('Dashboard E2E', () => {
     await toggleButton.click();
     await expect(sidebar).toHaveClass(/w-64/);
   });
+
+  test('should verify the filter buttons', async ({ page }) => {
+    const dirtyButton = page.getByRole('button', { name: 'Dirty' });
+    const unpushedButton = page.getByRole('button', { name: 'Unpushed' });
+    
+    await expect(dirtyButton).toBeVisible();
+    await expect(unpushedButton).toBeVisible();
+    
+    await dirtyButton.click();
+    await expect(dirtyButton).toHaveClass(/bg-primary/); // Should be selected
+    
+    await dirtyButton.click();
+    await expect(dirtyButton).not.toHaveClass(/bg-primary/);
+  });
 });

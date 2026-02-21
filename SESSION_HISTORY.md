@@ -22,10 +22,11 @@
 - **Deep Discovery**: Implemented standard-compliant scanning of Linux desktop entries to find executables without hardcoded paths.
 - **Collapsible Sidebar**: Refactored the sidebar to support a minimized icon-only mode with smooth transitions and Redux state persistence.
 - **Theme Consistency**: Standardized UI components (Select) to ensure perfect dark mode synergy across the dashboard.
-- **Comprehensive Testing**: Established a full testing stack achieving >80% coverage across unit, integration, and E2E layers.
+- **Comprehensive Testing**: Established a full testing stack achieving **82.06%** statement coverage across unit, integration, and E2E layers.
 - **Vitest & MSW**: Configured frontend testing with global Tauri mocks and Redux state synchronization.
 - **Rust Integration Tests**: Implemented native integration tests for Git analysis and app discovery logic.
-- **Playwright E2E**: Built automated end-to-end flows verifying cross-component interactions and sidebar transitions.
+- **Expanded E2E Flows**: Finalized Playwright flows verifying Sidebar toggling, responsive layout changes, Search logic, and UI Filters with a **100% pass rate**.
+- **Agent Governance**: Codified developmental constraints into agent workflows, including the "Commit only when asked" rule.
 - **Structural Optimization**: Refactored the dashboard into a standalone `RepoTable` component to ensure test stability and deterministic rendering.
 
 ### Current State
