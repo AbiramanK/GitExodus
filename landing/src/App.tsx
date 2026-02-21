@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Download, Github, Code2, Zap, Layout, Monitor } from "lucide-react";
+import { Download, Github, Code2, Zap, Layout, Monitor, Rocket, GitMerge } from "lucide-react";
 
 function App() {
   const getOsName = () => {
@@ -15,9 +15,19 @@ function App() {
 
   const features = [
     {
+      icon: <Rocket className="h-6 w-6 text-indigo-400" />,
+      title: "Universal Sync",
+      description: "One-click backup for all dirty and unpushed repositories across your entire system."
+    },
+    {
+      icon: <GitMerge className="h-6 w-6 text-pink-400" />,
+      title: "Smart Bulk Actions",
+      description: "Multi-select repositories to perform batch commits and pushes with ease."
+    },
+    {
       icon: <Zap className="h-6 w-6 text-yellow-400" />,
       title: "Lightning Fast Scanner",
-      description: "Powered by Rust, GitExodus scans your entire system for local repositories in milliseconds."
+      description: "Powered by Rust, GitExodus scans your system for local repositories in milliseconds."
     },
     {
       icon: <Layout className="h-6 w-6 text-blue-400" />,
@@ -25,14 +35,14 @@ function App() {
       description: "Review your uncommitted changes seamlessly with an integrated, premium code diff interface."
     },
     {
-      icon: <Code2 className="h-6 w-6 text-green-400" />,
-      title: "Real-time Tracking",
-      description: "Live detection of repository state changes, dirty working trees, and unpushed commits."
-    },
-    {
       icon: <Monitor className="h-6 w-6 text-purple-400" />,
       title: "Open With Integration",
       description: "Automatically detects your installed IDEs like VS Code and IntelliJ to jump straight into code."
+    },
+    {
+      icon: <Code2 className="h-6 w-6 text-green-400" />,
+      title: "Real-time Tracking",
+      description: "Live detection of repository state changes, dirty working trees, and unpushed commits."
     }
   ];
 
@@ -124,6 +134,53 @@ function App() {
                 <p className="text-sm text-gray-400 leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+
+        {/* Release Notes */}
+        <div className="mt-32 w-full text-left">
+          <h2 className="text-3xl font-bold text-white mb-12 text-center">v0.1.0 Release Notes</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="p-8 rounded-xl bg-[#161b22] border border-white/5">
+              <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <Rocket className="h-5 w-5 text-indigo-400" />
+                Universal Sync & Bulk Actions
+              </h3>
+              <ul className="space-y-3 text-gray-400 text-sm">
+                <li className="flex gap-2">
+                  <span className="text-indigo-500">•</span>
+                  <span><strong>Universal Sync:</strong> One-click backup (commit & push) for every dirty or unpushed repository on your system.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-indigo-500">•</span>
+                  <span><strong>Push All:</strong> Synchronization now uses <code>git push --all</code> to ensure all local branches are backed up.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-indigo-500">•</span>
+                  <span><strong>Multi-Select:</strong> Select specific repositories to perform batch operations with the new floating Bulk Action Bar.</span>
+                </li>
+              </ul>
+            </div>
+            <div className="p-8 rounded-xl bg-[#161b22] border border-white/5">
+              <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                <Monitor className="h-5 w-5 text-purple-400" />
+                UX & Performance
+              </h3>
+              <ul className="space-y-3 text-gray-400 text-sm">
+                <li className="flex gap-2">
+                  <span className="text-purple-500">•</span>
+                  <span><strong>Rust-Powered Analysis:</strong> Blazing fast repository scanning with real-time state detection.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-purple-500">•</span>
+                  <span><strong>Premium Diff View:</strong> Integrated GitHub-style diff viewer for reviewing uncommitted changes.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-purple-500">•</span>
+                  <span><strong>Smart IDE Discovery:</strong> One-click "Open With" for VS Code, IntelliJ, Android Studio, and more.</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
