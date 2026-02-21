@@ -33,6 +33,10 @@
 - **GitHub-style Diff Viewer**: Overhauled the code comparison viewer to emulate GitHub's Commit Page design, rendering sequential file cards over a full-screen dynamic window, rather than a crowded sidebar approach.
 - **Landing Page**: Built an SEO-friendly, animated VS Code-inspired Landing Page (`/landing`) with automatic Framer Motion transitions and OS-detecting downloads.
 - **GitHub Pages Automation**: Configured a `deploy-landing.yml` CI/CD pipeline to compile and distribute the landing page automatically across the `gh-pages` branch.
+- **Bulk Actions & Universal Sync**: Implemented a multi-select system with a floating action bar. Built a universal "Sync All Repos" button that commits and pushes all dirty/unpushed branches across the system using `push --all`.
+- **CI/CD Fixes**: Resolved landing page 404 errors by implementing relative pathing and `.nojekyll` configuration. Updated the `release.yml` workflow to trigger automatic draft releases on every push to the `master` branch.
+- **Landing Page Feature Sync**: Synchronized landing page content with current app capabilities (Bulk Actions, Universal Sync) and added a dedicated Release Notes section for v0.1.0.
+- **Strict Governance**: Refined agent workflows to strictly mandate user permission for all code commits, ensuring total control over the repository state.
 ### Current State
 - **Stability**: Highly stable, production-ready local builds.
 - **UX**: Fast, responsive, and feature-rich repository dashboard.

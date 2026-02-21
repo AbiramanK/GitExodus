@@ -22,10 +22,13 @@
 - [x] Feature: Premium Commit Dialog
 - [x] Feature: Popconfirm Deletion Component
 - [x] Feature: Automatic initial scan on launch
+- [x] Feature: Bulk Actions (Multi-select, batch commit/push)
+- [x] Feature: Universal Sync (Backup all repos & branches)
+- [x] DevOps: Release Automation on master branch
+- [x] DevOps: Landing Page 404 & Feature sync
 
 ## Future Roadmap (Planned)
 - [ ] Multi-root scanning (allow user to add multiple root paths)
-- [ ] Bulk actions (Commit all, Push all)
 - [ ] Branch management (Create, Checkout, Delete branches)
 - [ ] Detailed commit history view for each repo
 - [ ] Conflict resolution UI for merge/rebase
