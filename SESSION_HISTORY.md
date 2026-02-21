@@ -36,9 +36,21 @@
 - **Bulk Actions & Universal Sync**: Implemented a multi-select system with a floating action bar. Built a universal "Sync All Repos" button that commits and pushes all dirty/unpushed branches across the system using `push --all`.
 - **CI/CD Fixes**: Resolved landing page 404 errors by implementing relative pathing and `.nojekyll` configuration. Updated the `release.yml` workflow to trigger automatic draft releases on every push to the `master` branch.
 - **Landing Page Feature Sync**: Synchronized landing page content with current app capabilities (Bulk Actions, Universal Sync) and added a dedicated Release Notes section for v0.1.0.
+- **Visual Showcase**: Replaced landing page placeholders with interactive app screenshots of the Dashboard and Diff Viewer, implementing a tabbed transition for a premium feel.
+- **Analytics Dashboard**: Built a completely new primary view with animated charts, statistics cards, and system health monitoring.
+- **Repositories Refactor**: Moved repository discovery and management logic to a dedicated page for better scalability.
+- **Industrial Sidebar**: Redesigned the sidebar to include user profiles, unified iconography, and a more professional layout matching high-tier IDEs. Now integrated with a custom high-fidelity logo.
+- **Branding Update**: Designed and integrated a new high-fidelity geometric bird logo with neon enhancements. Refined the asset using ImageMagick for true transparency and implemented a premium circular-disk bird favicon to ensure maximum visibility and brand consistency across all browser themes.
+- **Routing Overhaul**: Implemented a robust multi-page routing system using Redux to manage application state transitions.
 - **Strict Governance**: Refined agent workflows to strictly mandate user permission for all code commits, ensuring total control over the repository state.
-### Current State
+- **Multi-root Scanning**: Replaced the single-root home directory scan with a flexible multi-root system. Users can now add multiple base paths for repository discovery.
+- **Settings Dashboard**: Implemented a dedicated Settings page with folder selection dialogs and persistent configuration management.
+- **Dynamic Routing**: Built a state-driven page switching mechanism to support multi-view application architecture.
+- **Dialog System Integration**: Integrated and initialized `tauri-plugin-dialog` for native filesystem interactions.
+- **UI/UX Refinement**: Enhanced the landing page with a premium Framer Motion screenshot carousel. Further refined the application architecture by moving the Theme Switch to the sidebar for global access, adding a "Scan Ecosystem" button to the Analytics Dashboard, and simplifying the sidebar by removing unnecessary user profile details. Restructured the sidebar footer to feature distinct, vertically stacked "Theme Switch" and "Exit" buttons for improved accessibility.
+### Current State (v0.2.0 Release)
 - **Stability**: Highly stable, production-ready local builds.
-- **UX**: Fast, responsive, and feature-rich repository dashboard.
-- **Safety**: Safe deletion with dependency safeguards fully operational.
-- **CI/CD**: Automated release pipeline verified.
+- **UX**: Fast, responsive Analytics Dashboard with multi-root scanning.
+- **Safety**: Safe deletion and Exit Confirmation logic fully operational.
+- **Branding**: Native high-fidelity logo and favicon integration complete.
+- **CI/CD**: Automated release and landing page deployment verified.

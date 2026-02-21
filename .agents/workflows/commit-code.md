@@ -2,9 +2,9 @@
 description: Standard procedure for committing code updates in GitExodus
 ---
 
-# CRITICAL RULE: NEVER COMMIT UNTIL I ASK
+# CRITICAL RULE: NEVER COMMIT WITHOUT EXPLICIT WRITTEN PERMISSION
 > [!CAUTION]
-> **Strict User Permission Required**: You are FORBIDDEN from executing the `git commit` command unless the user has explicitly and directly asked you to commit in their most recent message. General approval or planning approval is NOT permission to commit. You must wait for the specific instruction: "Commit this" or "Go ahead and commit".
+> **ABSOLUTE PROHIBITION**: You are strictly FORBIDDEN from executing the `git commit` command. There are NO exceptions to this rule. You must wait for a clear, direct, and unambiguous instruction like "Commit the code now" or "Proceed with the commit" in the user's most recent message. General approval or planning approval is NEVER permission to commit.
 
 When finalizing a phase of development, you MUST follow these steps:
 

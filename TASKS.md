@@ -24,11 +24,22 @@
 - [x] Feature: Automatic initial scan on launch
 - [x] Feature: Bulk Actions (Multi-select, batch commit/push)
 - [x] Feature: Universal Sync (Backup all repos & branches)
+- [x] Feature: Multi-root Scanning (Custom scan roots)
+- [x] Feature: Analytics Dashboard (Charts & Health overview)
+- [x] Branding: High-fidelity Software Logo (AI Generated)
+- [x] UI: Landing Page Screenshot Carousel
 - [x] DevOps: Release Automation on master branch
 - [x] DevOps: Landing Page 404 & Feature sync
+- [x] UI: Global Theme Management & Sidebar Restructuring
+
+## v0.2.0 Release (Completed)
+- [x] Feature: Analytics Dashboard & Statistics
+- [x] Feature: Multi-root Scanning System
+- [x] Feature: GitExodus Branding (Logo/Favicon)
+- [x] Feature: Sidebar Global Menu Restructuring
+- [x] Feature: Native Exit Confirmation Dialog
 
 ## Future Roadmap (Planned)
-- [ ] Multi-root scanning (allow user to add multiple root paths)
 - [ ] Branch management (Create, Checkout, Delete branches)
 - [ ] Detailed commit history view for each repo
 - [ ] Conflict resolution UI for merge/rebase
