@@ -1,6 +1,6 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { Download, Github, Code2, Zap, Layout, Monitor, Rocket, GitMerge } from "lucide-react";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Download, Github, Code2, Zap, Layout, Monitor, Rocket, GitMerge, ChevronLeft, ChevronRight } from "lucide-react";
 
 function App() {
   const getOsName = () => {
@@ -12,7 +12,6 @@ function App() {
   };
 
   const os = getOsName();
-
   const features = [
     {
       icon: <Rocket className="h-6 w-6 text-indigo-400" />,
@@ -46,15 +45,41 @@ function App() {
     }
   ];
 
+  const screenshots = [
+    {
+      id: 'dashboard',
+      src: "./screenshots/dashboard.png",
+      alt: "GitExodus Dashboard",
+      title: "Powerful Dashboard"
+    },
+    {
+      id: 'diff',
+      src: "./screenshots/diffviewer.png",
+      alt: "GitExodus Diff Viewer",
+      title: "GitHub-style Diff"
+    },
+    {
+      id: 'bulk',
+      src: "./screenshots/bulk_actions.png",
+      alt: "GitExodus Bulk Actions",
+      title: "Smart Bulk Operations"
+    }
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % screenshots.length);
+  const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + screenshots.length) % screenshots.length);
+
   return (
     <div className="min-h-screen flex flex-col items-center selection:bg-blue-500/30">
       {/* Navbar */}
-      <nav className="w-full flex items-center justify-between px-8 py-4 bg-[#0d1117]/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
+      <nav className="w-full flex items-center justify-between px-8 py-4 bg-background/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg">
-            GE
+          <div className="w-12 h-12 overflow-hidden shrink-0">
+            <img src="/logo.png" alt="GitExodus Logo" className="w-full h-full object-contain scale-125" />
           </div>
-          <span className="font-semibold tracking-tight text-white text-lg">GitExodus</span>
+          <span className="font-semibold tracking-tight text-white text-xl">GitExodus</span>
         </div>
         <div className="flex items-center gap-6 text-sm font-medium text-gray-300">
           <a href="#features" className="hover:text-white transition-colors">Features</a>
@@ -77,7 +102,7 @@ function App() {
           </Badge>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-6">
             Repo Management. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-emerald-400">
               Redefined.
             </span>
           </h1>
@@ -86,33 +111,76 @@ function App() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="https://github.com/AbiramanK/GitExodus/releases" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-[#238636] hover:bg-[#2ea043] text-white px-8 py-4 rounded-md font-semibold text-lg transition-colors shadow-lg shadow-green-900/20">
+            <a href="https://github.com/AbiramanK/GitExodus/releases" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-primary hover:bg-primary-hover text-white px-8 py-4 rounded-md font-semibold text-lg transition-colors shadow-lg shadow-green-900/20">
               <Download className="h-5 w-5" />
               Download for {os}
             </a>
-            <a href="https://github.com/AbiramanK/GitExodus/releases" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-[#21262d] hover:bg-[#30363d] text-gray-300 px-8 py-4 rounded-md font-semibold text-lg border border-white/10 transition-colors">
+            <a href="https://github.com/AbiramanK/GitExodus/releases" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-secondary hover:bg-[#30363d] text-gray-300 px-8 py-4 rounded-md font-semibold text-lg border border-white/10 transition-colors">
               Other platforms
             </a>
           </div>
           <p className="mt-4 text-sm text-gray-500">Free and open source. Available on macOS, Windows, and Linux.</p>
         </motion.div>
 
-        {/* Screenshot / App Preview */}
-        <motion.div 
-          className="mt-20 relative w-full rounded-xl overflow-hidden shadow-2xl shadow-indigo-500/10 border border-white/10 bg-[#0d1117] aspect-video"
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-           {/* Placeholder for screenshot */}
-           <div className="absolute inset-0 bg-gradient-to-tr from-[#0d1117] to-[#161b22] flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <Code2 className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <p className="text-xl font-medium">GitExodus Dashboard</p>
-                <p className="text-sm mt-2 opacity-60">High-performance Rust backend • Beautiful React UI</p>
-              </div>
-           </div>
-        </motion.div>
+        {/* Screenshot Carousel */}
+        <section className="mt-20 w-full group">
+          <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/10 bg-background aspect-video">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.4, ease: "easeInOut" }}
+                className="absolute inset-0 p-2"
+              >
+                <div className="flex items-center justify-center">
+                <img 
+                  src={screenshots[currentIndex].src} 
+                  alt={screenshots[currentIndex].alt}
+                  className="w-fit h-fit object-cover rounded-xl"
+                />
+                </div>
+                
+                {/* Caption Overlay */}
+                <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between">
+                    <div className="px-4 py-2 bg-black/60 backdrop-blur-md rounded-lg border border-white/10">
+                        <span className="text-white font-medium text-sm">{screenshots[currentIndex].title}</span>
+                    </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+            
+            {/* Glossy overlay effect */}
+            <div className="absolute inset-0 pointer-events-none bg-linear-to-t from-background/40 via-transparent to-transparent" />
+
+            {/* Navigation Arrows */}
+            <button 
+                onClick={prevSlide}
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+            >
+                <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button 
+                onClick={nextSlide}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+            >
+                <ChevronRight className="h-5 w-5" />
+
+            </button>
+          </div>
+
+          {/* Pagination Dots */}
+          <div className="flex justify-center gap-3 mt-8">
+            {screenshots.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentIndex ? 'bg-blue-500 w-8' : 'bg-white/20 hover:bg-white/40'}`}
+              />
+            ))}
+          </div>
+        </section>
 
         {/* Features Grid */}
         <div id="features" className="mt-32 w-full text-left">
@@ -121,13 +189,13 @@ function App() {
             {features.map((feature, idx) => (
               <motion.div 
                 key={idx}
-                className="p-6 rounded-xl bg-[#161b22] border border-white/5 hover:border-white/10 transition-colors"
+                className="p-6 rounded-xl bg-secondary-hover border border-white/5 hover:border-white/10 transition-colors"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.1 }}
               >
-                <div className="w-12 h-12 rounded-lg bg-[#21262d] flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center mb-4">
                   {feature.icon}
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
@@ -201,7 +269,7 @@ sudo dpkg -i gitexodus_0.1.0_amd64.deb</code>
       </main>
 
       {/* Footer */}
-      <footer className="w-full py-8 border-t border-white/10 bg-[#0d1117] text-center text-gray-500 text-sm mt-auto">
+      <footer className="w-full py-8 border-t border-white/10 bg-background text-center text-gray-500 text-sm mt-auto">
         <p>© 2026 Abiraman K. Built as an open-source project.</p>
       </footer>
     </div>
