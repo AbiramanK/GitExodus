@@ -20,6 +20,7 @@
 - [x] Quality: Comprehensive Testing (82.06% Coverage)
 - [x] Quality: Vitest & Playwright Infrastructure
 - [x] Feature: Premium Commit Dialog
+- [x] Feature: Popconfirm Deletion Component
 - [x] Feature: Automatic initial scan on launch
 
 ## Future Roadmap (Planned)

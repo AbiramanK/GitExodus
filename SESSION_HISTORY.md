@@ -22,13 +22,17 @@
 - **Deep Discovery**: Implemented standard-compliant scanning of Linux desktop entries to find executables without hardcoded paths.
 - **Collapsible Sidebar**: Refactored the sidebar to support a minimized icon-only mode with smooth transitions and Redux state persistence.
 - **Theme Consistency**: Standardized UI components (Select) to ensure perfect dark mode synergy across the dashboard.
+- **Premium UI Controls**: Replaced native browser prompts with custom Shadcn-inspired `CommitDialog` and `Popconfirm` components.
 - **Comprehensive Testing**: Established a full testing stack achieving **82.06%** statement coverage across unit, integration, and E2E layers.
 - **Vitest & MSW**: Configured frontend testing with global Tauri mocks and Redux state synchronization.
 - **Rust Integration Tests**: Implemented native integration tests for Git analysis and app discovery logic.
 - **Expanded E2E Flows**: Finalized Playwright flows verifying Sidebar toggling, responsive layout changes, Search logic, and UI Filters with a **100% pass rate**.
 - **Agent Governance**: Codified developmental constraints into agent workflows, including the "Commit only when asked" rule.
 - **Structural Optimization**: Refactored the dashboard into a standalone `RepoTable` component to ensure test stability and deterministic rendering.
-
+- **Global Theme Management**: Integrated Light/Dark context switching, adjusting Tailwind CSS configuration for dynamic `.light` mode overrides and ensuring all custom Shadcn-like components (Select) sync flawlessly.
+- **GitHub-style Diff Viewer**: Overhauled the code comparison viewer to emulate GitHub's Commit Page design, rendering sequential file cards over a full-screen dynamic window, rather than a crowded sidebar approach.
+- **Landing Page**: Built an SEO-friendly, animated VS Code-inspired Landing Page (`/landing`) with automatic Framer Motion transitions and OS-detecting downloads.
+- **GitHub Pages Automation**: Configured a `deploy-landing.yml` CI/CD pipeline to compile and distribute the landing page automatically across the `gh-pages` branch.
 ### Current State
 - **Stability**: Highly stable, production-ready local builds.
 - **UX**: Fast, responsive, and feature-rich repository dashboard.
