@@ -25,23 +25,23 @@ function App() {
     },
     {
       icon: <Zap className="h-6 w-6 text-yellow-400" />,
-      title: "Lightning Fast Scanner",
-      description: "Powered by Rust, GitExodus scans your system for local repositories in milliseconds."
+      title: "Multi-root Scanning",
+      description: "Manage disparate repository collections by adding multiple custom scan roots across your system."
     },
     {
       icon: <Layout className="h-6 w-6 text-blue-400" />,
-      title: "GitHub-style Diff Viewer",
-      description: "Review your uncommitted changes seamlessly with an integrated, premium code diff interface."
+      title: "Analytics Dashboard",
+      description: "Visualize ecosystem health with real-time statistics, charts, and repository tracking."
     },
     {
       icon: <Monitor className="h-6 w-6 text-purple-400" />,
-      title: "Open With Integration",
-      description: "Automatically detects your installed IDEs like VS Code and IntelliJ to jump straight into code."
+      title: "Smart Exit Guard",
+      description: "Custom confirmation dialogs for both window close and sidebar exit to prevent accidental data loss."
     },
     {
       icon: <Code2 className="h-6 w-6 text-green-400" />,
-      title: "Real-time Tracking",
-      description: "Live detection of repository state changes, dirty working trees, and unpushed commits."
+      title: "Geometric Branding",
+      description: "A premium software identity with high-fidelity neon-enhanced bird logos and high-DPI favicons."
     }
   ];
 
@@ -98,7 +98,7 @@ function App() {
           transition={{ duration: 0.6 }}
         >
           <Badge className="mb-6 px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20 text-sm font-medium inline-block">
-            v0.1.0 is now available
+            v0.2.0 is now available
           </Badge>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-6">
             Repo Management. <br />
@@ -207,45 +207,45 @@ function App() {
 
         {/* Release Notes */}
         <div className="mt-32 w-full text-left">
-          <h2 className="text-3xl font-bold text-white mb-12 text-center">v0.1.0 Release Notes</h2>
+          <h2 className="text-3xl font-bold text-white mb-12 text-center">v0.2.0 Release Notes</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="p-8 rounded-xl bg-[#161b22] border border-white/5">
               <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                <Rocket className="h-5 w-5 text-indigo-400" />
-                Universal Sync & Bulk Actions
+                <Layout className="h-5 w-5 text-blue-400" />
+                Analytics & Dashboard
               </h3>
               <ul className="space-y-3 text-gray-400 text-sm">
                 <li className="flex gap-2">
-                  <span className="text-indigo-500">•</span>
-                  <span><strong>Universal Sync:</strong> One-click backup (commit & push) for every dirty or unpushed repository on your system.</span>
+                  <span className="text-blue-500">•</span>
+                  <span><strong>Analytics View:</strong> New primary dashboard with real-time stats and health charts.</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-indigo-500">•</span>
-                  <span><strong>Push All:</strong> Synchronization now uses <code>git push --all</code> to ensure all local branches are backed up.</span>
+                  <span className="text-blue-500">•</span>
+                  <span><strong>Multi-root:</strong> Added support for multiple base paths in repository discovery.</span>
                 </li>
                 <li className="flex gap-2">
-                  <span className="text-indigo-500">•</span>
-                  <span><strong>Multi-Select:</strong> Select specific repositories to perform batch operations with the new floating Bulk Action Bar.</span>
+                  <span className="text-blue-500">•</span>
+                  <span><strong>Exit Confirmation:</strong> Secure application closure via window "X" or sidebar buttons.</span>
                 </li>
               </ul>
             </div>
             <div className="p-8 rounded-xl bg-[#161b22] border border-white/5">
               <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                 <Monitor className="h-5 w-5 text-purple-400" />
-                UX & Performance
+                Branding & Polish
               </h3>
               <ul className="space-y-3 text-gray-400 text-sm">
                 <li className="flex gap-2">
                   <span className="text-purple-500">•</span>
-                  <span><strong>Rust-Powered Analysis:</strong> Blazing fast repository scanning with real-time state detection.</span>
+                  <span><strong>Neon Logo:</strong> High-fidelity geometric bird identity with neon enhancements.</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-purple-500">•</span>
-                  <span><strong>Premium Diff View:</strong> Integrated GitHub-style diff viewer for reviewing uncommitted changes.</span>
+                  <span><strong>High-DPI Favicon:</strong> Sharp and prominent icon for Retina and 4K displays.</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-purple-500">•</span>
-                  <span><strong>Smart IDE Discovery:</strong> One-click "Open With" for VS Code, IntelliJ, Android Studio, and more.</span>
+                  <span><strong>Menu Refit:</strong> Simplified sidebar with dedicated Theme and Exit controls.</span>
                 </li>
               </ul>
             </div>
@@ -258,8 +258,8 @@ function App() {
             <div className="bg-[#161b22] p-8 rounded-xl border border-white/10">
                 <h3 className="text-lg font-medium text-white mb-4">Linux (Debian/Ubuntu)</h3>
                 <pre className="bg-black/50 p-4 rounded-md text-emerald-400 font-mono text-sm overflow-x-auto border border-white/5">
-                    <code>wget https://github.com/AbiramanK/GitExodus/releases/latest/download/gitexodus_0.1.0_amd64.deb
-sudo dpkg -i gitexodus_0.1.0_amd64.deb</code>
+                    <code>wget https://github.com/AbiramanK/GitExodus/releases/latest/download/gitexodus_0.2.0_amd64.deb
+sudo dpkg -i gitexodus_0.2.0_amd64.deb</code>
                 </pre>
                 
                 <h3 className="text-lg font-medium text-white mb-4 mt-8">Windows</h3>
