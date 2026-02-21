@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import repoReducer, { addRepo, startScan, finishScan } from '../redux/slices/repoSlice';
+import repoReducer, { addRepo, startScan, finishScan, setScanError, updateRepo, removeRepo } from '../redux/slices/repoSlice';
 import { RepositoryInfo } from '../redux/api/v2/apiResponse';
 
 describe('repoSlice', () => {
@@ -37,5 +37,44 @@ describe('repoSlice', () => {
     const state = { ...initialState, isScanning: true };
     const actual = repoReducer(state, finishScan());
     expect(actual.isScanning).toBe(false);
+  });
+
+  it('should handle setScanError', () => {
+    const error = 'Failed to scan';
+    const state = { ...initialState, isScanning: true };
+    const actual = repoReducer(state, setScanError(error));
+    expect(actual.isScanning).toBe(false);
+    expect(actual.scanError).toBe(error);
+  });
+
+  it('should handle updateRepo', () => {
+    const repo: RepositoryInfo = {
+      name: 'old-name',
+      path: '/path/1',
+      remote_url: null,
+      current_branch: 'master',
+      local_branches: ['master'],
+      is_dirty: false,
+      has_unpushed_commits: false,
+    };
+    const updatedRepo = { ...repo, name: 'new-name' };
+    const state = { ...initialState, repositories: [repo] };
+    const actual = repoReducer(state, updateRepo(updatedRepo));
+    expect(actual.repositories[0].name).toBe('new-name');
+  });
+
+  it('should handle removeRepo', () => {
+    const repo: RepositoryInfo = {
+        name: 'test',
+        path: '/path/1',
+        remote_url: null,
+        current_branch: 'master',
+        local_branches: ['master'],
+        is_dirty: false,
+        has_unpushed_commits: false,
+      };
+      const state = { ...initialState, repositories: [repo] };
+      const actual = repoReducer(state, removeRepo('/path/1'));
+      expect(actual.repositories).toHaveLength(0);
   });
 });
