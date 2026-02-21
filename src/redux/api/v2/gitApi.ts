@@ -1,21 +1,16 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { invoke } from '@tauri-apps/api/core';
-import { ScanResult } from './apiResponse';
+export interface AppInfo {
+  id: string;
+  name: string;
+  binary: string;
+  category: string;
+}
 
 export const gitApi = createApi({
   reducerPath: 'gitApi',
   baseQuery: (arg: any) => ({ data: arg }),
   endpoints: (builder) => ({
-    scanRepos: builder.query<ScanResult, string>({
-      queryFn: async (rootPath) => {
-        try {
-          const result = await invoke<ScanResult>('scan_repos', { rootPath });
-          return { data: result };
-        } catch (error) {
-          return { error: error as string };
-        }
-      },
-    }),
     commitRepo: builder.mutation<void, { path: string; message: string }>({
       queryFn: async ({ path, message }) => {
         try {
@@ -25,7 +20,6 @@ export const gitApi = createApi({
           return { error: error as string };
         }
       },
-      // Invalidate tags or handle refresh logic
     }),
     pushRepo: builder.mutation<void, string>({
       queryFn: async (path) => {
@@ -57,13 +51,34 @@ export const gitApi = createApi({
         }
       },
     }),
+    getAvailableApps: builder.query<AppInfo[], void>({
+      queryFn: async () => {
+        try {
+          const result = await invoke<AppInfo[]>('get_available_apps');
+          return { data: result };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+    }),
+    openWith: builder.mutation<void, { path: string; binary: string }>({
+      queryFn: async ({ path, binary }) => {
+        try {
+          await invoke('open_with', { path, binary });
+          return { data: undefined };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+    }),
   }),
 });
 
 export const { 
-    useScanReposQuery, 
     useCommitRepoMutation, 
     usePushRepoMutation, 
     useDeleteRepoMutation,
-    useOpenFolderMutation
+    useOpenFolderMutation,
+    useGetAvailableAppsQuery,
+    useOpenWithMutation
 } = gitApi;

@@ -1,7 +1,8 @@
-mod models;
-mod scanner;
-mod git_logic;
-mod commands;
+pub mod models;
+pub mod scanner;
+pub mod git_logic;
+pub mod app_discovery;
+pub mod commands;
 
 use commands::*;
 
@@ -14,7 +15,9 @@ pub fn run() {
             commit_repo,
             push_repo_command,
             delete_repo,
-            open_folder
+            open_folder,
+            get_available_apps,
+            open_with
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

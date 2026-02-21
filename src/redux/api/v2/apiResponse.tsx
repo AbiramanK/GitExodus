@@ -8,7 +8,3 @@ export interface RepositoryInfo {
     has_unpushed_commits: boolean;
 }
 
-export interface ScanResult {
-    repositories: RepositoryInfo[];
-    errors: string[];
-}

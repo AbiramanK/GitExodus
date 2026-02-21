@@ -95,7 +95,7 @@ pub fn push_repo(path: &Path) -> Result<(), Box<dyn std::error::Error>> {
     
     // Note: This requires credentials which is tricky in a GUI without a prompt.
     // We'll use the default callbacks for now.
-    let mut callbacks = git2::RemoteCallbacks::new();
+    let callbacks = git2::RemoteCallbacks::new();
     // In a real app, you'd handle credentials here.
     
     let mut options = git2::PushOptions::new();

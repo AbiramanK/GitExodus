@@ -11,6 +11,14 @@
 - [x] Feature: Open in File Manager
 - [x] UI: Sticky Sidebar Layout
 - [x] DevOps: GitHub Actions Workflow
+- [x] Feature: Real-time Live Scanning
+- [x] Feature: Automated App Discovery
+- [x] Feature: 'Open With' Menu selection
+- [x] Feature: Deep Discovery (.desktop parsing)
+- [x] Feature: Collapsible Sidebar (Min-mode)
+- [x] UI: Theme-synchronized Components
+- [x] Quality: Comprehensive Testing (80% Coverage)
+- [x] Quality: Vitest & Playwright Infrastructure
 
 ## Future Roadmap (Planned)
 - [ ] Multi-root scanning (allow user to add multiple root paths)

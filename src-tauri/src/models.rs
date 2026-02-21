@@ -11,8 +11,11 @@ pub struct RepositoryInfo {
     pub has_unpushed_commits: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct ScanResult {
-    pub repositories: Vec<RepositoryInfo>,
-    pub errors: Vec<String>,
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AppInfo {
+    pub id: String,
+    pub name: String,
+    pub binary: String,
+    pub category: String, // "editor", "file-manager", etc.
 }
