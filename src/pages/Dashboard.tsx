@@ -14,6 +14,8 @@ import { cn } from '../lib/utils';
 import { homeDir } from '@tauri-apps/api/path';
 import { RepoTable } from '../components/RepoTable';
 import { CommitDialog } from '../components/CommitDialog';
+import { DiffViewerDialog } from '../components/DiffViewerDialog';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { RepositoryInfo } from '../redux/api/v2/apiResponse';
 
 export const Dashboard = () => {
@@ -76,6 +78,7 @@ export const Dashboard = () => {
   }, [dispatch]);
 
   const [commitDialogOpen, setCommitDialogOpen] = useState(false);
+  const [diffDialogOpen, setDiffDialogOpen] = useState(false);
   const [selectedRepo, setSelectedRepo] = useState<{ path: string, name: string } | null>(null);
 
   const handleCommit = (path: string) => {
@@ -100,8 +103,14 @@ export const Dashboard = () => {
 
 
   const handleDelete = (path: string) => {
-      if (window.confirm("Are you sure you want to delete this repository? This cannot be undone.")) {
-          deleteRepo(path);
+      deleteRepo(path);
+  };
+
+  const handleViewChanges = (path: string) => {
+      const repo = repositories.find(r => r.path === path);
+      if (repo) {
+          setSelectedRepo({ path, name: repo.name });
+          setDiffDialogOpen(true);
       }
   };
 
@@ -112,10 +121,13 @@ export const Dashboard = () => {
           <h1 className="text-3xl font-bold tracking-tight text-primary">GitExodus</h1>
           <p className="text-muted-foreground">Automated local repository management and cleanup.</p>
         </div>
-        <Button onClick={handleScan} disabled={isScanning} data-testid="scan-button">
-          <RotateCcw className={cn("mr-2 h-4 w-4", isScanning && "animate-spin")} />
-          Scan System
-        </Button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Button onClick={handleScan} disabled={isScanning} data-testid="scan-button">
+            <RotateCcw className={cn("mr-2 h-4 w-4", isScanning && "animate-spin")} />
+            Scan System
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -160,12 +172,20 @@ export const Dashboard = () => {
         onCommit={handleCommit}
         onPush={handlePush}
         onDelete={handleDelete}
+        onViewChanges={handleViewChanges}
       />
 
       <CommitDialog 
         isOpen={commitDialogOpen}
         onOpenChange={setCommitDialogOpen}
         onConfirm={onCommitConfirm}
+        repoName={selectedRepo?.name || ""}
+      />
+
+      <DiffViewerDialog
+        isOpen={diffDialogOpen}
+        onOpenChange={setDiffDialogOpen}
+        repoPath={selectedRepo?.path || ""}
         repoName={selectedRepo?.name || ""}
       />
     </div>
