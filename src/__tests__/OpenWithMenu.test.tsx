@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { OpenWithMenu } from '../components/OpenWithMenu';
 import { renderWithProviders } from '../test/test-utils';
 import * as gitApi from '../redux/api/v2/gitApi';

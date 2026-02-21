@@ -19,6 +19,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Mock the diff viewer library to avoid ESM/CJS transpilation issues during tests
+      'react-diff-viewer-continued': path.resolve(__dirname, './src/test/__mocks__/react-diff-viewer-continued.js'),
     },
   },
 });

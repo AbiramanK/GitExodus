@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRepoTable } from '../hooks/table/v2/useRepoTable';
-import { RepositoryInfo } from '../../../redux/api/v2/apiResponse';
+import { RepositoryInfo } from '../redux/api/v2/apiResponse';
 
 const mockRepos: RepositoryInfo[] = [
   { name: 'dirty-repo', path: '/dirty', remote_url: null, current_branch: 'master', local_branches: ['master'], is_dirty: true, has_unpushed_commits: false },
