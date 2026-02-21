@@ -7,7 +7,7 @@ export interface AppInfo {
   category: string;
 }
 
-import { GitChange, FileDiff } from './apiResponse';
+import { GitChange, FileDiff, BulkResult } from './apiResponse';
 
 export const gitApi = createApi({
   reducerPath: 'gitApi',
@@ -86,8 +86,17 @@ export const gitApi = createApi({
     getFileDiffContent: builder.query<FileDiff, { repoPath: string; filePath: string }>({
       queryFn: async ({ repoPath, filePath }) => {
         try {
-          // Tauri commands handle camelCase conversion automatically for arguments
           const result = await invoke<FileDiff>('get_file_diff_content', { repoPath, filePath });
+          return { data: result };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+    }),
+    bulkCommitAndPush: builder.mutation<BulkResult, { paths: string[]; message: string }>({
+      queryFn: async ({ paths, message }) => {
+        try {
+          const result = await invoke<BulkResult>('bulk_commit_and_push', { paths, message });
           return { data: result };
         } catch (error) {
           return { error: error as string };
@@ -105,5 +114,6 @@ export const {
     useGetAvailableAppsQuery,
     useOpenWithMutation,
     useGetRepoChangesQuery,
-    useGetFileDiffContentQuery
+    useGetFileDiffContentQuery,
+    useBulkCommitAndPushMutation
 } = gitApi;

@@ -19,7 +19,8 @@ pub fn run() {
             get_available_apps,
             open_with,
             get_repo_changes,
-            get_file_diff_content
+            get_file_diff_content,
+            bulk_commit_and_push
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

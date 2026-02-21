@@ -31,3 +31,19 @@ pub struct FileDiff {
     pub original_content: String,
     pub modified_content: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BulkRepoResult {
+    pub path: String,
+    pub name: String,
+    pub success: bool,
+    pub error: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BulkResult {
+    pub results: Vec<BulkRepoResult>,
+    pub total: usize,
+    pub succeeded: usize,
+    pub failed: usize,
+}

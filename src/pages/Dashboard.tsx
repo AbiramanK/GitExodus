@@ -1,80 +1,76 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { RootState } from '../redux/store';
 import { startScan, addRepo, finishScan, setScanError } from '../redux/slices/repoSlice';
 import { useRepoTable } from '../hooks/table/v2/useRepoTable';
-import { 
-    Button, Input, Select 
-} from '../components/ui/core';
-import { useCommitRepoMutation, usePushRepoMutation, useDeleteRepoMutation } from '../redux/api/v2/gitApi';
-import { Search, RotateCcw } from 'lucide-react';
+import { Button, Input } from '../components/ui/core';
+import { useCommitRepoMutation, usePushRepoMutation, useDeleteRepoMutation, useBulkCommitAndPushMutation } from '../redux/api/v2/gitApi';
+import { Search, RotateCcw, Rocket, GitMerge, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { homeDir } from '@tauri-apps/api/path';
 import { RepoTable } from '../components/RepoTable';
 import { CommitDialog } from '../components/CommitDialog';
 import { DiffViewerDialog } from '../components/DiffViewerDialog';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { RepositoryInfo } from '../redux/api/v2/apiResponse';
+import { BulkActionBar } from '../components/BulkActionBar';
+import { Popconfirm } from '../components/ui/Popconfirm';
+import { RepositoryInfo, BulkResult } from '../redux/api/v2/apiResponse';
+
+const UNIVERSAL_COMMIT_MSG = 'chore: bulk sync via GitExodus';
 
 export const Dashboard = () => {
   const dispatch = useDispatch();
   const { repositories, isScanning } = useSelector((state: RootState) => state.repos);
-  
   const [commitRepo] = useCommitRepoMutation();
   const [pushRepo] = usePushRepoMutation();
   const [deleteRepo] = useDeleteRepoMutation();
+  const [bulkCommitAndPush] = useBulkCommitAndPushMutation();
 
-  const {
-    filteredData,
-    filterDirty, setFilterDirty,
-    filterUnpushed, setFilterUnpushed,
-    setFilterBranch,
-    searchTerm, setSearchTerm
-  } = useRepoTable(repositories);
+  const { filteredData, filterDirty, setFilterDirty, filterUnpushed, setFilterUnpushed, searchTerm, setSearchTerm } = useRepoTable(repositories);
 
-  const handleScan = async () => {
-    dispatch(startScan());
+  const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
+  useEffect(() => { setSelectedPaths(new Set()); }, [repositories]);
+
+  const [universalLoading, setUniversalLoading] = useState(false);
+  const [universalResult, setUniversalResult] = useState<BulkResult | null>(null);
+
+  const handleUniversalCommitPushAll = async () => {
+    const allPaths = repositories.filter(r => r.is_dirty || r.has_unpushed_commits).map(r => r.path);
+    if (!allPaths.length) return;
+    setUniversalLoading(true);
     try {
-      const home = await homeDir();
-      await invoke('scan_repos', { rootPath: home });
-    } catch (error) {
-      dispatch(setScanError(error as string));
+      const result = await bulkCommitAndPush({ paths: allPaths, message: UNIVERSAL_COMMIT_MSG }).unwrap();
+      setUniversalResult(result);
+    } catch (e) { console.error(e); } finally {
+      setUniversalLoading(false);
+      setTimeout(() => setUniversalResult(null), 8000);
     }
   };
 
+  const handleBulkCommit = async (paths: string[], message: string) => {
+    try { return await bulkCommitAndPush({ paths, message }).unwrap(); } catch { return undefined; }
+  };
+
+  const handleBulkPush = (paths: string[]) => { paths.forEach(path => pushRepo(path)); };
+
+  const handleScan = async () => {
+    dispatch(startScan());
+    try { const home = await homeDir(); await invoke('scan_repos', { rootPath: home }); }
+    catch (error) { dispatch(setScanError(error as string)); }
+  };
+
   useEffect(() => {
-    const setupListeners = async () => {
-      const unlistenStarted = await listen('scan-started', () => {
-        dispatch(startScan());
-      });
-      const unlistenDetected = await listen<RepositoryInfo>('repo-detected', (event) => {
-        dispatch(addRepo(event.payload));
-      });
-      const unlistenFinished = await listen('scan-finished', () => {
-        dispatch(finishScan());
-      });
-      const unlistenError = await listen<string>('scan-error', (event) => {
-        console.error(event.payload);
-      });
-
-      return () => {
-        unlistenStarted();
-        unlistenDetected();
-        unlistenFinished();
-        unlistenError();
-      };
+    const setup = async () => {
+      const u1 = await listen('scan-started', () => dispatch(startScan()));
+      const u2 = await listen<RepositoryInfo>('repo-detected', (e) => dispatch(addRepo(e.payload)));
+      const u3 = await listen('scan-finished', () => dispatch(finishScan()));
+      return () => { u1(); u2(); u3(); };
     };
-
-    const promise = setupListeners();
-    
-    // Initial scan on app open
+    const p = setup();
     handleScan();
-
-    return () => {
-        promise.then(unlisten => unlisten());
-    };
+    return () => { p.then(u => u()); };
   }, [dispatch]);
 
   const [commitDialogOpen, setCommitDialogOpen] = useState(false);
@@ -82,112 +78,73 @@ export const Dashboard = () => {
   const [selectedRepo, setSelectedRepo] = useState<{ path: string, name: string } | null>(null);
 
   const handleCommit = (path: string) => {
-      const repo = repositories.find(r => r.path === path);
-      if (repo) {
-          setSelectedRepo({ path, name: repo.name });
-          setCommitDialogOpen(true);
-      }
+      const r = repositories.find(r => r.path === path);
+      if (r) { setSelectedRepo({ path, name: r.name }); setCommitDialogOpen(true); }
   };
-
   const onCommitConfirm = (message: string) => {
-      if (selectedRepo) {
-          commitRepo({ path: selectedRepo.path, message });
-          setCommitDialogOpen(false);
-          setSelectedRepo(null);
-      }
+      if (selectedRepo) { commitRepo({ path: selectedRepo.path, message }); setCommitDialogOpen(false); }
   };
 
-  const handlePush = (path: string) => {
-      pushRepo(path);
-  };
-
-
-  const handleDelete = (path: string) => {
-      deleteRepo(path);
-  };
-
-  const handleViewChanges = (path: string) => {
-      const repo = repositories.find(r => r.path === path);
-      if (repo) {
-          setSelectedRepo({ path, name: repo.name });
-          setDiffDialogOpen(true);
-      }
-  };
+  const actionableCount = repositories.filter(r => r.is_dirty || r.has_unpushed_commits).length;
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-8 space-y-6 pb-32">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">GitExodus</h1>
           <p className="text-muted-foreground">Automated local repository management and cleanup.</p>
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Button onClick={handleScan} disabled={isScanning} data-testid="scan-button">
-            <RotateCcw className={cn("mr-2 h-4 w-4", isScanning && "animate-spin")} />
-            Scan System
+          <Button onClick={handleScan} disabled={isScanning} size="sm" variant="outline">
+            <RotateCcw className={cn("mr-2 h-4 w-4", isScanning && "animate-spin")} /> Scan
           </Button>
+          <Popconfirm
+            title="Universal Commit &amp; Push All"
+            description={`This will commit and push all dirty/unpushed branches across ${actionableCount} repos. Confirm?`}
+            onConfirm={handleUniversalCommitPushAll}
+          >
+            <Button size="sm" disabled={universalLoading || actionableCount === 0} className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
+              {universalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
+              Sync All Repos
+            </Button>
+          </Popconfirm>
         </div>
       </div>
+
+      {universalResult && (
+        <div className={`p-3 rounded-md border flex items-center gap-3 text-sm ${universalResult.failed === 0 ? "bg-green-500/5 border-green-500/20 text-green-600 font-medium" : "bg-red-500/5 border-red-500/20 text-red-600 font-medium"}`}>
+          <GitMerge className="h-4 w-4" />
+          <span>Universal Sync: {universalResult.succeeded}/{universalResult.total} repos succeeded.</span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-3 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search repositories..." 
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <Input placeholder="Search repositories..." className="pl-10" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
         <div className="flex gap-2">
-            <Button 
-                variant={filterDirty ? "default" : "outline"} 
-                size="sm"
-                onClick={() => setFilterDirty(!filterDirty)}
-            >
-                Dirty
-            </Button>
-            <Button 
-                variant={filterUnpushed ? "default" : "outline"} 
-                size="sm"
-                onClick={() => setFilterUnpushed(!filterUnpushed)}
-            >
-                Unpushed
-            </Button>
-            <Select 
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFilterBranch(e.target.value || null)}
-            >
-                <option value="">All Branches</option>
-                {Array.from(new Set(repositories.map(r => r.current_branch))).filter(Boolean).map(branch => (
-                    <option key={branch as string} value={branch as string}>{branch as string}</option>
-                ))}
-            </Select>
+            <Button variant={filterDirty ? "default" : "outline"} size="sm" onClick={() => setFilterDirty(!filterDirty)}>Dirty</Button>
+            <Button variant={filterUnpushed ? "default" : "outline"} size="sm" onClick={() => setFilterUnpushed(!filterUnpushed)}>Unpushed</Button>
         </div>
       </div>
 
       <RepoTable 
-        data={filteredData}
-        isScanning={isScanning}
-        onCommit={handleCommit}
-        onPush={handlePush}
-        onDelete={handleDelete}
-        onViewChanges={handleViewChanges}
+        data={filteredData} isScanning={isScanning} onCommit={handleCommit} onPush={pushRepo} onDelete={deleteRepo} onViewChanges={(p) => { 
+          const r = repositories.find(r => r.path === p);
+          if (r) { setSelectedRepo({path: p, name: r.name }); setDiffDialogOpen(true); }
+        }} 
+        selectedPaths={selectedPaths} onSelectionChange={setSelectedPaths}
       />
 
-      <CommitDialog 
-        isOpen={commitDialogOpen}
-        onOpenChange={setCommitDialogOpen}
-        onConfirm={onCommitConfirm}
-        repoName={selectedRepo?.name || ""}
+      <BulkActionBar 
+        selectedCount={selectedPaths.size} selectedPaths={Array.from(selectedPaths)} 
+        onBulkCommit={handleBulkCommit} onBulkPush={handleBulkPush} onClearSelection={() => setSelectedPaths(new Set())} 
       />
 
-      <DiffViewerDialog
-        isOpen={diffDialogOpen}
-        onOpenChange={setDiffDialogOpen}
-        repoPath={selectedRepo?.path || ""}
-        repoName={selectedRepo?.name || ""}
-      />
+      <CommitDialog isOpen={commitDialogOpen} onOpenChange={setCommitDialogOpen} onConfirm={onCommitConfirm} repoName={selectedRepo?.name || ""} />
+      <DiffViewerDialog isOpen={diffDialogOpen} onOpenChange={setDiffDialogOpen} repoPath={selectedRepo?.path || ""} repoName={selectedRepo?.name || ""} />
     </div>
   );
 };

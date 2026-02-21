@@ -14,14 +14,54 @@ interface RepoTableProps {
   onPush: (path: string) => void;
   onDelete: (path: string) => void;
   onViewChanges: (path: string) => void;
+  selectedPaths: Set<string>;
+  onSelectionChange: (paths: Set<string>) => void;
 }
 
-export const RepoTable = ({ data, isScanning, onCommit, onPush, onDelete, onViewChanges }: RepoTableProps) => {
+export const RepoTable = ({ 
+  data, isScanning, onCommit, onPush, onDelete, onViewChanges,
+  selectedPaths, onSelectionChange
+}: RepoTableProps) => {
+  const allSelected = data.length > 0 && data.every(r => selectedPaths.has(r.path));
+  const someSelected = data.some(r => selectedPaths.has(r.path));
+
+  const handleToggleAll = () => {
+    if (allSelected) {
+      const next = new Set(selectedPaths);
+      data.forEach(r => next.delete(r.path));
+      onSelectionChange(next);
+    } else {
+      const next = new Set(selectedPaths);
+      data.forEach(r => next.add(r.path));
+      onSelectionChange(next);
+    }
+  };
+
+  const handleToggleRow = (path: string) => {
+    const next = new Set(selectedPaths);
+    if (next.has(path)) {
+      next.delete(path);
+    } else {
+      next.add(path);
+    }
+    onSelectionChange(next);
+  };
+
   return (
     <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-10">
+                <input
+                  type="checkbox"
+                  aria-label="Select all"
+                  checked={allSelected}
+                  ref={(el) => { if (el) el.indeterminate = !allSelected && someSelected; }}
+                  onChange={handleToggleAll}
+                  className="h-4 w-4 cursor-pointer accent-primary"
+                />
+              </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Branch</TableHead>
               <TableHead>Status</TableHead>
@@ -30,11 +70,19 @@ export const RepoTable = ({ data, isScanning, onCommit, onPush, onDelete, onView
           </TableHeader>
           <TableBody>
             {isScanning && data.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-10">Scanning for repositories...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-10">Scanning for repositories...</TableCell></TableRow>
             ) : data.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-10">No repositories found.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-10">No repositories found.</TableCell></TableRow>
             ) : data.map((repo) => (
-              <TableRow key={repo.path}>
+              <TableRow key={repo.path} data-selected={selectedPaths.has(repo.path)} className={selectedPaths.has(repo.path) ? "bg-primary/5" : ""}>
+                <TableCell>
+                  <input
+                    type="checkbox"
+                    checked={selectedPaths.has(repo.path)}
+                    onChange={() => handleToggleRow(repo.path)}
+                    className="h-4 w-4 cursor-pointer accent-primary"
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="font-medium">{repo.name}</div>
                   <div className="text-xs text-muted-foreground truncate max-w-xs">{repo.path}</div>
@@ -58,43 +106,17 @@ export const RepoTable = ({ data, isScanning, onCommit, onPush, onDelete, onView
                       onConfirm={() => onDelete(repo.path)}
                       variant="destructive"
                     >
-                      <Button 
-                          size="icon" 
-                          variant="ghost" 
-                          className="text-muted-foreground hover:text-destructive"
-                          title="Delete"
-                      >
+                      <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-destructive" title="Delete">
                           <Trash2 className="h-4 w-4" />
                       </Button>
                     </Popconfirm>
-                    <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        onClick={() => onViewChanges(repo.path)}
-                        disabled={!repo.is_dirty}
-                        className="text-muted-foreground hover:text-primary"
-                        title="View Changes"
-                    >
+                    <Button size="icon" variant="ghost" onClick={() => onViewChanges(repo.path)} disabled={!repo.is_dirty} className="text-muted-foreground hover:text-primary" title="View Changes">
                         <Eye className="h-4 w-4" />
                     </Button>
-                    <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        onClick={() => onPush(repo.path)}
-                        disabled={!repo.has_unpushed_commits}
-                        className="text-muted-foreground hover:text-primary"
-                        title="Push"
-                    >
+                    <Button size="icon" variant="ghost" onClick={() => onPush(repo.path)} disabled={!repo.has_unpushed_commits} className="text-muted-foreground hover:text-primary" title="Push">
                         <ArrowUpCircle className="h-4 w-4" />
                     </Button>
-                    <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        onClick={() => onCommit(repo.path)}
-                        disabled={!repo.is_dirty}
-                        className="text-muted-foreground hover:text-primary"
-                        title="Commit"
-                    >
+                    <Button size="icon" variant="ghost" onClick={() => onCommit(repo.path)} disabled={!repo.is_dirty} className="text-muted-foreground hover:text-primary" title="Commit">
                         <GitCommit className="h-4 w-4" />
                     </Button>
                   </div>

@@ -1,4 +1,4 @@
-use crate::models::{AppInfo, GitChange, FileDiff};
+use crate::models::{AppInfo, GitChange, FileDiff, BulkRepoResult, BulkResult};
 use crate::git_logic::{analyze_repo, commit_all, push_repo, safe_delete, get_repo_changes as git_get_changes, get_file_diff_content as git_get_diff};
 use crate::app_discovery::get_detected_apps;
 use std::path::PathBuf;
@@ -106,4 +106,58 @@ pub async fn get_repo_changes(path: String) -> Result<Vec<GitChange>, String> {
 #[tauri::command]
 pub async fn get_file_diff_content(repo_path: String, file_path: String) -> Result<FileDiff, String> {
     git_get_diff(&PathBuf::from(repo_path), &file_path).map_err(|e: Box<dyn std::error::Error>| e.to_string())
+}
+
+#[tauri::command]
+pub async fn bulk_commit_and_push(paths: Vec<String>, message: String) -> Result<BulkResult, String> {
+    use crate::git_logic::analyze_repo;
+
+    let total = paths.len();
+    let mut results: Vec<BulkRepoResult> = Vec::new();
+
+    for path_str in &paths {
+        let path = PathBuf::from(path_str);
+        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or(path_str).to_string();
+
+        let repo_info = match analyze_repo(&path) {
+            Ok(info) => info,
+            Err(e) => {
+                results.push(BulkRepoResult { path: path_str.clone(), name, success: false, error: Some(e.to_string()) });
+                continue;
+            }
+        };
+
+        let mut op_error: Option<String> = None;
+
+        // Commit if dirty
+        if repo_info.is_dirty {
+            if let Err(e) = commit_all(&path, &message) {
+                op_error = Some(format!("Commit failed: {}", e));
+            }
+        }
+
+        // Push if unpushed (or if we just committed). 
+        // We use push --all here to satisfy "all the branches" request.
+        if op_error.is_none() && (repo_info.has_unpushed_commits || repo_info.is_dirty) {
+            let push_res = Command::new("git")
+                .arg("push")
+                .arg("--all")
+                .current_dir(&path)
+                .output();
+            
+            if let Err(e) = push_res {
+                op_error = Some(format!("Push failed: {}", e));
+            } else if !push_res.unwrap().status.success() {
+                 op_error = Some("Push failed (git exit code non-zero)".to_string());
+            }
+        }
+
+        let success = op_error.is_none();
+        results.push(BulkRepoResult { path: path_str.clone(), name, success, error: op_error });
+    }
+
+    let succeeded = results.iter().filter(|r| r.success).count();
+    let failed = results.iter().filter(|r| !r.success).count();
+
+    Ok(BulkResult { results, total, succeeded, failed })
 }

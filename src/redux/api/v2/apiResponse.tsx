@@ -17,3 +17,17 @@ export interface FileDiff {
     original_content: string;
     modified_content: string;
 }
+
+export interface BulkRepoResult {
+    path: string;
+    name: string;
+    success: boolean;
+    error: string | null;
+}
+
+export interface BulkResult {
+    results: BulkRepoResult[];
+    total: number;
+    succeeded: number;
+    failed: number;
+}

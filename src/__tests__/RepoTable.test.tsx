@@ -20,17 +20,17 @@ describe('RepoTable', () => {
   const onViewChanges = vi.fn();
 
   it('renders progress row when scanning and empty', () => {
-    renderWithProviders(<RepoTable data={[]} isScanning={true} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} />);
+    renderWithProviders(<RepoTable data={[]} isScanning={true} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={new Set()} onSelectionChange={vi.fn()} />);
     expect(screen.getByText('Scanning for repositories...')).toBeInTheDocument();
   });
 
   it('renders empty row when not scanning and empty', () => {
-    renderWithProviders(<RepoTable data={[]} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} />);
+    renderWithProviders(<RepoTable data={[]} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={new Set()} onSelectionChange={vi.fn()} />);
     expect(screen.getByText('No repositories found.')).toBeInTheDocument();
   });
 
   it('renders repository rows with status badges', () => {
-    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} />);
+    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={new Set()} onSelectionChange={vi.fn()} />);
     expect(screen.getByText('repo1')).toBeInTheDocument();
     expect(screen.getByText('repo2')).toBeInTheDocument();
     expect(screen.getByText('Dirty')).toBeInTheDocument();
@@ -38,7 +38,7 @@ describe('RepoTable', () => {
   });
 
   it('handles action button clicks', () => {
-    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} />);
+    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={new Set()} onSelectionChange={vi.fn()} />);
     
     // Test Commit button
     const commitButtons = screen.getAllByTitle('Commit');
