@@ -77,7 +77,7 @@ function App() {
       <nav className="w-full flex items-center justify-between px-8 py-4 bg-background/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 overflow-hidden shrink-0">
-            <img src="/logo.png" alt="GitExodus Logo" className="w-full h-full object-contain scale-125" />
+            <img src="logo.png" alt="GitExodus Logo" className="w-full h-full object-contain scale-125" />
           </div>
           <span className="font-semibold tracking-tight text-white text-xl">GitExodus</span>
         </div>
