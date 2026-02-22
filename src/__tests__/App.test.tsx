@@ -6,7 +6,9 @@ import { renderWithProviders } from '../test/test-utils';
 describe('App component', () => {
   it('renders sidebar and dashboard', () => {
     renderWithProviders(<App />);
+    // "GitExodus" is in the sidebar logo
     expect(screen.getAllByText('GitExodus')[0]).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Search repositories...')).toBeInTheDocument();
+    // Dashboard should now show Analytics Dashboard
+    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
   });
 });

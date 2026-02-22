@@ -6,6 +6,6 @@ import { render } from '@testing-library/react';
 describe('DashboardContainer', () => {
   it('renders the Dashboard', () => {
     render(<DashboardContainer />);
-    expect(screen.getByText('GitExodus')).toBeInTheDocument();
+    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
   });
 });
