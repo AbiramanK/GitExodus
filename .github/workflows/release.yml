@@ -8,7 +8,32 @@ on:
       - "v*"
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.check.outputs.changed }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Check version change
+        id: check
+        run: |
+          CURR_VERSION=$(jq -r .version package.json)
+          PREV_VERSION=$(git show HEAD~1:package.json 2>/dev/null | jq -r .version || echo "0.0.0")
+          if [ "$CURR_VERSION" != "$PREV_VERSION" ]; then
+            echo "Version changed from $PREV_VERSION to $CURR_VERSION"
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$CURR_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "Version unchanged ($CURR_VERSION)"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
   release:
+    needs: check-version
+    if: needs.check-version.outputs.version_changed == 'true' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write
     strategy:
@@ -41,8 +66,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__
-          releaseName: "GitExodus v__VERSION__"
-          releaseBody: "Automated release of GitExodus."
-          releaseDraft: true
+          tagName: v${{ needs.check-version.outputs.version }}
+          releaseName: "GitExodus v${{ needs.check-version.outputs.version }}"
+          releaseBody: "Automated release of GitExodus v${{ needs.check-version.outputs.version }}."
+          releaseDraft: false
           prerelease: false
