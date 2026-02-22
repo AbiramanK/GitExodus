@@ -15,6 +15,7 @@
 
 ## 2026-02-22
 ### Testing & Quality Assurance
+- **Unauthorized Push Fix**: Corrected agent behavior to strictly prohibit `git push` operations without explicit user consent. Updated `.agents/workflows/commit-code.md` to establish this boundary.
 - **80% Coverage Target**: Successfully attained 80.25% project-wide statement coverage, fulfilling the pre-commit mandatory requirement.
 - **Suite Stabilization**: Stabilized all 20 test suites, resolving persistent hangs in `DiffViewerDialog` and rendering issues in `Dashboard`.
 - **API coverage**: Achieved nearly 100% test coverage for the `gitApi` layer, ensuring all CRUD operations and error paths are verified.

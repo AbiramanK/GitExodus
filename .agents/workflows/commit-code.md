@@ -2,9 +2,9 @@
 description: Standard procedure for committing code updates in GitExodus
 ---
 
-# CRITICAL RULE: NEVER COMMIT WITHOUT EXPLICIT WRITTEN PERMISSION
+# CRITICAL RULE: NEVER COMMIT OR PUSH WITHOUT EXPLICIT WRITTEN PERMISSION
 > [!CAUTION]
-> **ABSOLUTE PROHIBITION**: You are strictly FORBIDDEN from executing the `git commit` command. There are NO exceptions to this rule. You must wait for a clear, direct, and unambiguous instruction like "Commit the code now" or "Proceed with the commit" in the user's most recent message. General approval or planning approval is NEVER permission to commit.
+> **ABSOLUTE PROHIBITION**: You are strictly FORBIDDEN from executing the `git commit` or `git push` commands. There are NO exceptions to this rule. You must wait for a clear, direct, and unambiguous instruction like "Commit the code now" or "Push the changes" in the user's most recent message. General approval or planning approval is NEVER permission to commit or push.
 
 When finalizing a phase of development, you MUST follow these steps:
 

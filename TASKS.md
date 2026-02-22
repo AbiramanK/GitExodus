@@ -43,7 +43,10 @@
 - [x] Fix TypeScript errors in unit tests
 - [x] Cleanup unused imports and code
 - [x] Sync dependency lockfiles
+- [x] DevOps: Automated Release on version increment
+- [x] DevOps: Landing page asset resolution fix
 - [x] Enforce mandatory pre-commit testing in agent workflows
+- [x] Governance: Prohibit unauthorized git push
 
 ## Future Roadmap (Planned)
 - [ ] Branch management (Create, Checkout, Delete branches)
