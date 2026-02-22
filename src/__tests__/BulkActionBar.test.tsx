@@ -37,4 +37,35 @@ describe('BulkActionBar Component', () => {
     fireEvent.click(screen.getByText('Commit'));
     expect(screen.getByPlaceholderText('Standard commit message...')).toBeInTheDocument();
   });
+
+  it('handles bulk commit success', async () => {
+    const onBulkCommit = vi.fn().mockResolvedValue({ succeeded: 2, failed: 0, total: 2 });
+    render(<BulkActionBar {...defaultProps} onBulkCommit={onBulkCommit} />);
+    
+    fireEvent.click(screen.getByText('Commit'));
+    const input = screen.getByPlaceholderText('Standard commit message...');
+    fireEvent.change(input, { target: { value: 'bulk message' } });
+    fireEvent.click(screen.getByText('Confirm'));
+    
+    expect(onBulkCommit).toHaveBeenCalledWith(['/path/1', '/path/2'], 'bulk message');
+    expect(await screen.findByText('2/2 succeeded')).toBeInTheDocument();
+  });
+
+  it('handles bulk commit failure', async () => {
+    const onBulkCommit = vi.fn().mockResolvedValue({ succeeded: 1, failed: 1, total: 2 });
+    render(<BulkActionBar {...defaultProps} onBulkCommit={onBulkCommit} />);
+    
+    fireEvent.click(screen.getByText('Commit'));
+    const input = screen.getByPlaceholderText('Standard commit message...');
+    fireEvent.change(input, { target: { value: 'bulk message' } });
+    fireEvent.click(screen.getByText('Confirm'));
+    
+    expect(await screen.findByText('1/2 succeeded')).toBeInTheDocument();
+  });
+
+  it('calls onBulkPush when Push is clicked', () => {
+    render(<BulkActionBar {...defaultProps} />);
+    fireEvent.click(screen.getByText('Push'));
+    expect(defaultProps.onBulkPush).toHaveBeenCalledWith(['/path/1', '/path/2']);
+  });
 });

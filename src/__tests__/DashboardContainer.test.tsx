@@ -59,8 +59,7 @@ describe('Dashboard Component', () => {
     });
     // The value 1 is rendered in StatusCard in a bold div
     // Use getAllByText because '1' might appear in other cards or counts
-    expect(screen.getByText(/Dirty Repositories/i)).toBeInTheDocument();
-    const statusCards = screen.getAllByRole('heading', { level: 3 }); // Card titles
-    expect(statusCards.some(c => c.textContent === 'Dirty Repositories')).toBe(true);
+    expect(screen.getByText(/Dirty Workspaces/i)).toBeInTheDocument();
+    expect(screen.getByText(/Unpushed Changes/i)).toBeInTheDocument();
   });
 });

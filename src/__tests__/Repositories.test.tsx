@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { Repositories } from '../pages/Repositories';
 import { renderWithProviders } from '../test/test-utils';
+import * as gitApi from '../redux/api/v2/gitApi';
 
 // Mock Popconfirm to simplify testing Delete
 vi.mock('../components/ui/Popconfirm', () => ({
@@ -69,6 +70,54 @@ describe('Repositories Page', () => {
 
     expect(screen.getByText('test-repo')).toBeInTheDocument();
     expect(screen.queryByText('other-repo')).not.toBeInTheDocument();
+    expect(screen.getByText('Sync All Repos')).toBeInTheDocument();
+  });
+
+  it('triggers universal sync on confirm', async () => {
+    const bulkMock = vi.fn().mockReturnValue({
+        unwrap: () => Promise.resolve({ succeeded: 1, failed: 0, total: 1 })
+    });
+    vi.spyOn(gitApi, 'useBulkCommitAndPushMutation').mockReturnValue([
+        bulkMock,
+        { isLoading: false } as any
+    ]);
+    renderWithProviders(<Repositories />, {
+        preloadedState: {
+            repos: {
+                repositories: [mockRepo],
+                isScanning: false,
+                scanError: null,
+                scanRoots: ['/root']
+            }
+        }
+    });
+    
+    fireEvent.click(screen.getByText('Sync All Repos'));
+    
+    expect(await screen.findByText(/Universal Sync: 1\/1 repos succeeded/i)).toBeInTheDocument();
+  });
+
+  it('triggers bulk actions', async () => {
+    renderWithProviders(<Repositories />, {
+        preloadedState: {
+            repos: {
+                repositories: [{ 
+                    name: 'r1', path: '/p1', is_dirty: true, current_branch: 'b', 
+                    has_unpushed_commits: false, remote_url: 'u', local_branches: ['b'] 
+                }],
+                isScanning: false, scanError: null, scanRoots: []
+            }
+        }
+    });
+
+    // Select the first repo checkbox (the one in the row)
+    const checkboxes = screen.getAllByRole('checkbox');
+    fireEvent.click(checkboxes[1]); // Index 0 is "Select all", Index 1 is the item
+
+    expect(screen.getByText('1 repo selected')).toBeInTheDocument();
+    
+    // Test bulk push
+    fireEvent.click(screen.getByText('Push'));
   });
 
   it('filters dirty repositories', () => {
@@ -110,27 +159,6 @@ describe('Repositories Page', () => {
     expect(invoke).toHaveBeenCalledWith('scan_repos', { rootPaths: ['/root'] });
   });
 
-  it('handles universal sync click', async () => {
-    const { invoke } = await import('@tauri-apps/api/core');
-    renderWithProviders(<Repositories />, {
-      preloadedState: {
-        repos: {
-          repositories: [
-            { ...mockRepo, is_dirty: true, name: 'repo-to-sync', path: '/sync' }
-          ],
-          isScanning: false,
-          scanError: null,
-          scanRoots: []
-        }
-      }
-    });
-
-    const syncButton = screen.getByText('Sync All Repos');
-    fireEvent.click(syncButton);
-
-    // handleUniversalCommitPushAll calls bulkCommitAndPush mutation
-    expect(invoke).toHaveBeenCalledWith('bulk_commit_and_push', expect.anything());
-  });
 
   it('listens for backend events', async () => {
     const { listen } = await import('@tauri-apps/api/event');
