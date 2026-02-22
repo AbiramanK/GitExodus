@@ -39,6 +39,11 @@
 - [x] Feature: Sidebar Global Menu Restructuring
 - [x] Feature: Native Exit Confirmation Dialog
 
+## CI/CD Stability (Completed)
+- [x] Fix TypeScript errors in unit tests
+- [x] Cleanup unused imports and code
+- [x] Sync dependency lockfiles
+
 ## Future Roadmap (Planned)
 - [ ] Branch management (Create, Checkout, Delete branches)
 - [ ] Detailed commit history view for each repo

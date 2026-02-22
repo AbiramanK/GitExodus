@@ -13,6 +13,12 @@
 - Set up GitHub Actions for cross-platform releases.
 - Resolved environment issues (missing Rust/Cargo, PostCSS v4 migration).
 
+## 2026-02-22
+### CI/CD & Testing Stability
+- Resolved TypeScript errors in frontend unit tests (`AppSidebar.test.tsx`, `repoSlice.test.ts`, `uiSlice.test.ts`) to fix GitHub Release Action.
+- Cleaned up unused `useState` import in `Settings.tsx`.
+- Synchronized dependency lockfiles for root and landing page.
+
 ## 2026-02-21
 ### UX & Feature Enhancements
 - **Real-time Scanning**: Implemented live repository discovery using Tauri events and Redux streaming.
