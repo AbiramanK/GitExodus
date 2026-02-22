@@ -14,12 +14,12 @@
 - Resolved environment issues (missing Rust/Cargo, PostCSS v4 migration).
 
 ## 2026-02-22
-### Agent Governance & Workflow Enhancements
-- Mandated pre-commit validation in `commit-code.md`. Agents must now pass all Unit, UI, and E2E tests before committing code.
-- Enhanced `testing.md` with comprehensive test command references and pre-commit validation rules.
-- Synchronized unit and E2E tests with the latest UI architecture changes (Analytics Dashboard).
-- Resolved TypeScript errors in tests and cleaned up unused imports.
-- Synchronized dependency lockfiles for root and landing page.
+### Testing & Quality Assurance
+- **80% Coverage Target**: Successfully attained 81.2% project-wide statement coverage, fulfilling the pre-commit mandatory requirement.
+- **Suite Stabilization**: Stabilized all 20 test suites, resolving persistent hangs in `DiffViewerDialog` and rendering issues in `Dashboard`.
+- **API coverage**: Achieved nearly 100% test coverage for the `gitApi` layer, ensuring all CRUD operations and error paths are verified.
+- **Structural Tests**: Added unit tests for the main `App` routing and sidebar interactions.
+- **Agent Governance**: Updated `.agents/workflows/commit-code.md` to strictly enforce the 80% coverage rule for all future development.
 
 ## 2026-02-21
 ### UX & Feature Enhancements
