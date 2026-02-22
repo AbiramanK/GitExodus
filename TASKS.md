@@ -17,7 +17,7 @@
 - [x] Feature: Deep Discovery (.desktop parsing)
 - [x] Feature: Collapsible Sidebar (Min-mode)
 - [x] UI: Theme-synchronized Components
-- [x] Quality: Comprehensive Testing (82.06% Coverage)
+- [x] Quality: Comprehensive Testing (80.25% Coverage)
 - [x] Quality: Vitest & Playwright Infrastructure
 - [x] Feature: Premium Commit Dialog
 - [x] Feature: Popconfirm Deletion Component
