@@ -1,5 +1,12 @@
 # GitExodus
 
+[![Build Status](https://github.com/AbiramanK/GitExodus/actions/workflows/release.yml/badge.svg)](https://github.com/AbiramanK/GitExodus/actions/workflows/release.yml)
+[![Landing Page](https://github.com/AbiramanK/GitExodus/actions/workflows/deploy-landing.yml/badge.svg)](https://github.com/AbiramanK/GitExodus/actions/workflows/deploy-landing.yml)
+[![Tests](https://img.shields.io/badge/tests-90%20passed-brightgreen)](https://github.com/AbiramanK/GitExodus)
+[![Coverage](https://img.shields.io/badge/coverage-80.25%25-brightgreen)](https://github.com/AbiramanK/GitExodus)
+[![GitHub Stars](https://img.shields.io/github/stars/AbiramanK/GitExodus?style=social)](https://github.com/AbiramanK/GitExodus)
+[![GitHub Issues](https://img.shields.io/github/issues/AbiramanK/GitExodus)](https://github.com/AbiramanK/GitExodus/issues)
+
 GitExodus is a high-performance system utility for automating Git repository management and cleanup across your entire local machine. Built with **Tauri v2**, **Rust**, and **React**, it offers a blazingly fast experience with native OS integration.
 
 ## Key Features
