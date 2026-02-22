@@ -43,6 +43,7 @@
 - [x] Fix TypeScript errors in unit tests
 - [x] Cleanup unused imports and code
 - [x] Sync dependency lockfiles
+- [x] Enforce mandatory pre-commit testing in agent workflows
 
 ## Future Roadmap (Planned)
 - [ ] Branch management (Create, Checkout, Delete branches)

@@ -14,9 +14,11 @@
 - Resolved environment issues (missing Rust/Cargo, PostCSS v4 migration).
 
 ## 2026-02-22
-### CI/CD & Testing Stability
-- Resolved TypeScript errors in frontend unit tests (`AppSidebar.test.tsx`, `repoSlice.test.ts`, `uiSlice.test.ts`) to fix GitHub Release Action.
-- Cleaned up unused `useState` import in `Settings.tsx`.
+### Agent Governance & Workflow Enhancements
+- Mandated pre-commit validation in `commit-code.md`. Agents must now pass all Unit, UI, and E2E tests before committing code.
+- Enhanced `testing.md` with comprehensive test command references and pre-commit validation rules.
+- Synchronized unit and E2E tests with the latest UI architecture changes (Analytics Dashboard).
+- Resolved TypeScript errors in tests and cleaned up unused imports.
 - Synchronized dependency lockfiles for root and landing page.
 
 ## 2026-02-21
