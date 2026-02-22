@@ -31,7 +31,10 @@ describe('AppSidebar', () => {
   it('renders collapsed when state is preloaded as collapsed', () => {
     renderWithProviders(<AppSidebar />, {
       preloadedState: {
-        ui: { sidebarCollapsed: true }
+        ui: { 
+          sidebarCollapsed: true,
+          currentPage: 'dashboard'
+        }
       }
     });
     

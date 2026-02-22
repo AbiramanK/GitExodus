@@ -4,6 +4,7 @@ import uiReducer, { toggleSidebar, setSidebarCollapsed } from '../redux/slices/u
 describe('uiSlice', () => {
   const initialState = {
     sidebarCollapsed: false,
+    currentPage: 'dashboard',
   };
 
   it('should handle initial state', () => {

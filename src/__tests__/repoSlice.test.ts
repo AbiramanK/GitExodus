@@ -7,6 +7,7 @@ describe('repoSlice', () => {
     repositories: [],
     isScanning: false,
     scanError: null,
+    scanRoots: [],
   };
 
   it('should handle initial state', () => {
