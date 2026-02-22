@@ -16,7 +16,16 @@ description: Rules and procedures for testing and coverage in GitExodus
     - Located in the `e2e/` directory.
     - Focus on critical user journeys: Scanning -> Detection -> Action (Commit/Open).
 
-## Commands
-- **Run Frontend Tests**: `npm run test`
-- **Check Coverage**: `npm run test:coverage`
-- **Run Backend Tests**: `cargo test`
+## Pre-commit Validation
+Before committing any code, you MUST run the following validations:
+1. **Frontend**: `npm run test` (Unit/UI)
+2. **Backend**: `cargo test` (Logic/Integration)
+3. **End-to-End**: `npx playwright test` (Critical flows)
+
+## Commands Reference
+- **Frontend Unit & UI**: `npm run test`
+- **Frontend Coverage**: `npm run test:coverage`
+- **Tailwind/Vite Dev**: `npm run dev`
+- **Backend Tests**: `cargo test`
+- **E2E (Playwright)**: `npx playwright test`
+- **E2E (UI Mode)**: `npx playwright test --ui`
