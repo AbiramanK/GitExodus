@@ -7,6 +7,7 @@ import { Provider } from 'react-redux'
 import repoReducer from '../redux/slices/repoSlice'
 import uiReducer from '../redux/slices/uiSlice'
 import { gitApi } from '../redux/api/v2/gitApi'
+import { ThemeProvider } from '../components/ThemeProvider'
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'queries'> {
   preloadedState?: Partial<RootState>
@@ -35,7 +36,13 @@ export function renderWithProviders(
   }: ExtendedRenderOptions = {}
 ) {
   function Wrapper({ children }: PropsWithChildren<{}>): React.ReactElement {
-    return <Provider store={store as any}>{children}</Provider>
+    return (
+      <Provider store={store as any}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </Provider>
+    )
   }
   return { store, ...render(ui, { wrapper: Wrapper, ...renderOptions }) }
 }

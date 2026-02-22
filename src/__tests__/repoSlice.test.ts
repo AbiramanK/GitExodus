@@ -78,4 +78,16 @@ describe('repoSlice', () => {
       const actual = repoReducer(state, removeRepo('/path/1'));
       expect(actual.repositories).toHaveLength(0);
   });
+
+  it('should handle addScanRoot', () => {
+    const actual = repoReducer(initialState, { type: 'repos/addScanRoot', payload: '/new/root' });
+    expect(actual.scanRoots).toContain('/new/root');
+  });
+
+  it('should handle removeScanRoot', () => {
+    const state = { ...initialState, scanRoots: ['/root/1', '/root/2'] };
+    const actual = repoReducer(state, { type: 'repos/removeScanRoot', payload: '/root/1' });
+    expect(actual.scanRoots).toHaveLength(1);
+    expect(actual.scanRoots).not.toContain('/root/1');
+  });
 });

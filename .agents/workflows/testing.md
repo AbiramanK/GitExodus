@@ -3,7 +3,7 @@ description: Rules and procedures for testing and coverage in GitExodus
 ---
 
 ## Coverage Target
-- **80% Minimum**: Every new feature or fix MUST be accompanied by tests that maintain or improve the overall project coverage to at least 80%.
+- **80% Minimum**: Every new feature or fix MUST be accompanied by tests that maintain or improve the overall project coverage to at least **80% Statements**.
 
 ## Testing Levels
 1. **Integration Tests (Rust)**:
