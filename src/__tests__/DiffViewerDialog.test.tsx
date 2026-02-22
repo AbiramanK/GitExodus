@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import { DiffViewerDialog } from '../components/DiffViewerDialog';
 import { renderWithProviders } from '../test/test-utils';
-import React from 'react';
 import * as gitApi from '../redux/api/v2/gitApi';
 
 // Extreme mocking to avoid hangs

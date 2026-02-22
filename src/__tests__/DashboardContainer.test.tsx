@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { Dashboard } from '../pages/Dashboard';
 import { renderWithProviders } from '../test/test-utils';
-import React from 'react';
 
 // Mock chart components and lucide
 vi.mock('lucide-react', async () => {

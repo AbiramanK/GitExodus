@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import App from '../App';
 import { renderWithProviders } from '../test/test-utils';
-import React from 'react';
 
 // Mock components that might cause issues
 vi.mock('../components/AppSidebar', () => ({
