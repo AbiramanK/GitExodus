@@ -5,6 +5,7 @@ pub mod app_discovery;
 pub mod commands;
 
 use tauri::Emitter;
+use tauri::Manager;
 use commands::*;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -30,6 +31,20 @@ pub fn run() {
                 api.prevent_close();
                 window.emit("request-exit", ()).unwrap();
             }
+        })
+        .setup(|app| {
+            // Force set icon for development mode on Linux
+            let window = app.get_webview_window("main").unwrap();
+            
+            // Resolve path to the icon. In dev, we look in src-tauri/icons.
+            // Note: In a bundled app, this would be in the resources directory.
+            let icon_path = std::path::PathBuf::from("src-tauri/icons/icon.png");
+            
+            if let Ok(icon) = tauri::image::Image::from_path(icon_path) {
+                let _ = window.set_icon(icon);
+            }
+
+            Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
