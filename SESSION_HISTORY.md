@@ -64,6 +64,8 @@
 - **GitHub Templates**: Implemented standard templates for Bug Reports, Feature Requests, and Pull Requests in the `.github` directory.
 - **Documentation Sync**: Updated `README.md` with the official GitHub Pages URL and high-visibility links to all new documentation.
 - **Branding Sync**: Regenerated all application icons from the high-fidelity bird logo source to ensure consistency across window titles and taskbars.
+- **Dashboard Optimization**: Fixed dashboard scanning logic by implementing autoscan on component mount and adding a home-directory fallback for when no scan roots are explicitly defined.
+- **Architectural Refactor**: Synchronized scanning logic across the Dashboard and Repository pages by implementing a custom `useScan` hook, ensuring deterministic behavior and high maintainability.
 
 ### Current State (v0.2.1-compliance)
 - **Compliance**: Fully compliant with open-source industry standards.

@@ -1,27 +1,22 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { listen } from '@tauri-apps/api/event';
-import { invoke } from '@tauri-apps/api/core';
-import { RootState } from '../redux/store';
-import { startScan, addRepo, finishScan, setScanError } from '../redux/slices/repoSlice';
+import { useScan } from '../hooks/useScan';
 import { useRepoTable } from '../hooks/table/v2/useRepoTable';
 import { Button, Input } from '../components/ui/core';
 import { useCommitRepoMutation, usePushRepoMutation, useDeleteRepoMutation, useBulkCommitAndPushMutation } from '../redux/api/v2/gitApi';
 import { Search, RotateCcw, Rocket, GitMerge, Loader2, Folder } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { homeDir } from '@tauri-apps/api/path';
 import { RepoTable } from '../components/RepoTable';
 import { CommitDialog } from '../components/CommitDialog';
 import { DiffViewerDialog } from '../components/DiffViewerDialog';
 import { BulkActionBar } from '../components/BulkActionBar';
 import { Popconfirm } from '../components/ui/Popconfirm';
-import { RepositoryInfo, BulkResult } from '../redux/api/v2/apiResponse';
+import { BulkResult } from '../redux/api/v2/apiResponse';
 
 const UNIVERSAL_COMMIT_MSG = 'chore: bulk sync via GitExodus';
 
 export const Repositories = () => {
-  const dispatch = useDispatch();
-  const { repositories, isScanning, scanRoots } = useSelector((state: RootState) => state.repos);
+  const { repositories, isScanning, handleScan } = useScan(true);
+  
   const [commitRepo] = useCommitRepoMutation();
   const [pushRepo] = usePushRepoMutation();
   const [deleteRepo] = useDeleteRepoMutation();
@@ -53,34 +48,6 @@ export const Repositories = () => {
   };
 
   const handleBulkPush = (paths: string[]) => { paths.forEach(path => pushRepo(path)); };
-
-  const handleScan = async () => {
-    dispatch(startScan());
-    try { 
-      let rootsList = scanRoots;
-      if (rootsList.length === 0) {
-        const home = await homeDir();
-        rootsList = [home];
-      }
-      await invoke('scan_repos', { rootPaths: rootsList }); 
-    }
-    catch (error) { dispatch(setScanError(error as string)); }
-  };
-
-  useEffect(() => {
-    const setup = async () => {
-      const u1 = await listen('scan-started', () => dispatch(startScan()));
-      const u2 = await listen<RepositoryInfo>('repo-detected', (e) => dispatch(addRepo(e.payload)));
-      const u3 = await listen('scan-finished', () => dispatch(finishScan()));
-      return () => { u1(); u2(); u3(); };
-    };
-    const p = setup();
-    // Only scan if repositories are empty
-    if (repositories.length === 0) {
-        handleScan();
-    }
-    return () => { p.then(u => u()); };
-  }, [dispatch]);
 
   const [commitDialogOpen, setCommitDialogOpen] = useState(false);
   const [diffDialogOpen, setDiffDialogOpen] = useState(false);
