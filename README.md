@@ -26,28 +26,28 @@ GitExodus is a high-performance system utility for automating Git repository man
 
 ## Getting Started
 
-### Prerequisites
-- [Rust & Cargo](https://www.rust-lang.org/learn/get-started#installing-rust)
-- [Node.js](https://nodejs.org/)
+For detailed installation instructions, please refer to the **[Installation Guide](INSTALL.md)**.
 
-### Installation
+### Quick Start (Developers)
 ```bash
 npm install
-```
-
-### Development
-```bash
 npm run tauri dev
 ```
 
-### Build
-```bash
-npm run tauri build
-```
-
 ## Documentation
+
+Full documentation is available at: **[https://abiramank.github.io/GitExodus/](https://abiramank.github.io/GitExodus/)**
+
+- 🛠️ **[Installation Guide](INSTALL.md)**: Steps for commercial users and developers.
+- 🤝 **[Contributing Guide](CONTRIBUTING.md)**: How to contribute to GitExodus.
+- 📜 **[Code of Conduct](CODE_OF_CONDUCT.md)**: Our community standards.
+- 🛡️ **[Security Policy](SECURITY.md)**: How to report vulnerabilities.
+- 🆘 **[Support](SUPPORT.md)**: How to get help.
+- 📜 **[License](LICENSE)**: MIT License.
+
+## Additional Resources
 - [Session History](SESSION_HISTORY.md)
 - [Task List & Roadmap](TASKS.md)
 
 ## License
-MIT (or as specified in the project)
+Built with ❤️ and released under the **[MIT License](LICENSE)**.

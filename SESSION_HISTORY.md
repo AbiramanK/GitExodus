@@ -52,6 +52,23 @@
 - **Branding Update**: Designed and integrated a new high-fidelity geometric bird logo with neon enhancements. Refined the asset using ImageMagick for true transparency and implemented a premium circular-disk bird favicon to ensure maximum visibility and brand consistency across all browser themes.
 - **Routing Overhaul**: Implemented a robust multi-page routing system using Redux to manage application state transitions.
 - **Strict Governance**: Refined agent workflows to strictly mandate user permission for all code commits, ensuring total control over the repository state.
+
+## 2026-02-23
+### Open Source Compliance & Documentation
+- **License**: Added the MIT License file.
+- **Contributing Guide**: Created `CONTRIBUTING.md` with guidelines for bug reports, enhancements, and PRs.
+- **Code of Conduct**: Adopted the Contributor Covenant v2.1 in `CODE_OF_CONDUCT.md`.
+- **Security Policy**: Established a vulnerability reporting process in `SECURITY.md`.
+- **Support**: Added `SUPPORT.md` with links to discussions and issues.
+- **Installation Guide**: Built a comprehensive `INSTALL.md` covering both commercial users (pre-built binaries) and developers (source build).
+- **GitHub Templates**: Implemented standard templates for Bug Reports, Feature Requests, and Pull Requests in the `.github` directory.
+- **Documentation Sync**: Updated `README.md` with the official GitHub Pages URL and high-visibility links to all new documentation.
+
+### Current State (v0.2.1-compliance)
+- **Compliance**: Fully compliant with open-source industry standards.
+- **Onboarding**: Streamlined installation and contribution flows for all user types.
+- **Infrastructure**: Robust issue and PR management via GitHub templates.
+- **Visibility**: Documentation centralized and linked directly from the primary README.
 - **Multi-root Scanning**: Replaced the single-root home directory scan with a flexible multi-root system. Users can now add multiple base paths for repository discovery.
 - **Settings Dashboard**: Implemented a dedicated Settings page with folder selection dialogs and persistent configuration management.
 - **Dynamic Routing**: Built a state-driven page switching mechanism to support multi-view application architecture.

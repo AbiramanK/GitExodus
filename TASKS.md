@@ -38,6 +38,11 @@
 - [x] Feature: GitExodus Branding (Logo/Favicon)
 - [x] Feature: Sidebar Global Menu Restructuring
 - [x] Feature: Native Exit Confirmation Dialog
+- [x] Documentation: Open Source Compliance (LICENSE, CONTRIBUTING, CoC)
+- [x] Documentation: Security & Support Policies
+- [x] Documentation: Full Installation Guide (Commercial & Developer)
+- [x] Documentation: GitHub Issue & PR Templates
+- [x] Documentation: README Documentation Sync & GitHub Pages URL
 
 ## CI/CD Stability (Completed)
 - [x] Fix TypeScript errors in unit tests
