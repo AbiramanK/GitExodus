@@ -1,10 +1,16 @@
 import * as React from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "./ui/Dialog"
-import { useGetRepoChangesQuery, useGetFileDiffContentQuery } from "../redux/api/v2/gitApi"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/Dialog"
+import { 
+  FileText, Plus, Trash2, Edit2, Loader2, Copy, Check, FileCode2, GitCompare,
+  ArrowLeft
+} from "lucide-react"
 import ReactDiffViewer from 'react-diff-viewer-continued'
-import { FileText, Plus, Trash, Edit2, Loader2, Copy, Check, FileCode2, GitCompare } from "lucide-react"
 import { cn } from "../lib/utils"
 import { useTheme } from "./ThemeProvider"
+import { Popconfirm } from "./ui/Popconfirm"
+import { Button } from "./ui/core"
+import { useGetRepoChangesQuery, useGetFileDiffContentQuery, useDiscardFileChangesMutation, useDiscardHunkMutation } from "../redux/api/v2/gitApi"
+import { Undo } from "lucide-react"
 
 interface DiffViewerDialogProps {
   isOpen: boolean
@@ -20,6 +26,30 @@ export const DiffViewerDialog = ({ isOpen, onOpenChange, repoPath, repoName }: D
   const [isResizing, setIsResizing] = React.useState(false)
   const [copied, setCopied] = React.useState(false)
   const { resolvedTheme } = useTheme()
+
+  const [discardFile, { isLoading: isDiscarding }] = useDiscardFileChangesMutation()
+  const [discardHunk, { isLoading: isHunkDiscarding }] = useDiscardHunkMutation()
+
+  const handleDiscard = async (e: React.MouseEvent, filePath: string) => {
+    e.stopPropagation();
+    try {
+      await discardFile({ repoPath, filePath }).unwrap();
+      if (selectedFile === filePath) {
+          const nextFile = changes?.find(c => c.path !== filePath)?.path || null;
+          setSelectedFile(nextFile);
+      }
+    } catch (err) {
+      console.error("Failed to discard changes:", err);
+    }
+  };
+
+  const handleDiscardHunk = async (patch: string) => {
+    try {
+      await discardHunk({ repoPath, patch }).unwrap();
+    } catch (err) {
+      console.error("Failed to discard hunk:", err);
+    }
+  };
 
   const { 
     data: changes, 
@@ -90,7 +120,7 @@ export const DiffViewerDialog = ({ isOpen, onOpenChange, repoPath, repoName }: D
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'added': return <Plus className="h-4 w-4 text-emerald-500" />
-      case 'deleted': return <Trash className="h-4 w-4 text-rose-500" />
+      case 'deleted': return <Trash2 className="h-4 w-4 text-rose-500" />
       default: return <Edit2 className="h-4 w-4 text-blue-500" />
     }
   }
@@ -110,6 +140,35 @@ export const DiffViewerDialog = ({ isOpen, onOpenChange, repoPath, repoName }: D
     return { name, dir };
   };
 
+  const parseHunk = (patch: string) => {
+    const lines = patch.split('\n');
+    const oldLines: string[] = [];
+    const newLines: string[] = [];
+    
+    let started = false;
+    for (const line of lines) {
+      if (line.startsWith('@@')) {
+        started = true;
+        continue;
+      }
+      if (!started) continue;
+      
+      if (line.startsWith(' ')) {
+        oldLines.push(line.slice(1));
+        newLines.push(line.slice(1));
+      } else if (line.startsWith('-')) {
+        oldLines.push(line.slice(1));
+      } else if (line.startsWith('+')) {
+        newLines.push(line.slice(1));
+      }
+    }
+    
+    return {
+      oldValue: oldLines.join('\n'),
+      newValue: newLines.join('\n')
+    };
+  };
+
   const handleCopyPath = () => {
     if (selectedFile) {
         navigator.clipboard.writeText(selectedFile);
@@ -121,7 +180,15 @@ export const DiffViewerDialog = ({ isOpen, onOpenChange, repoPath, repoName }: D
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-none w-screen h-screen sm:rounded-none border-none flex flex-col p-0 overflow-hidden bg-background">
-        <DialogHeader className="px-6 py-4 border-b shrink-0 bg-muted/30 backdrop-blur-sm flex flex-row items-center justify-between">
+        <DialogHeader className="px-6 py-4 border-b shrink-0 bg-muted/30 backdrop-blur-sm flex flex-row items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onOpenChange(false)}
+            className="hover:bg-muted rounded-full"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div>
             <DialogTitle className="flex items-center gap-2">
                 <GitCompare className="h-5 w-5 text-primary" />
@@ -131,7 +198,6 @@ export const DiffViewerDialog = ({ isOpen, onOpenChange, repoPath, repoName }: D
               Viewing working tree differences for <span className="font-semibold text-foreground/90">{repoName}</span>
             </DialogDescription>
           </div>
-          <DialogClose onClick={() => onOpenChange(false)} />
         </DialogHeader>
         
         <div className="flex flex-1 overflow-hidden relative">
@@ -172,39 +238,65 @@ export const DiffViewerDialog = ({ isOpen, onOpenChange, repoPath, repoName }: D
                     const { name, dir } = getFileNameAndDir(change.path);
                     const isSelected = selectedFile === change.path;
                     return (
-                      <button
-                        key={change.path}
-                        onClick={() => setSelectedFile(change.path)}
+                      <React.Fragment key={change.path}>
+                        <div
                         className={cn(
-                          "w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-md transition-all duration-200 group relative",
+                          "w-full flex items-center gap-2 group relative pr-2",
                           isSelected 
-                            ? "bg-primary/10 text-primary" 
-                            : "hover:bg-muted/50 text-foreground/80 hover:text-foreground"
+                            ? "bg-primary/10 text-primary rounded-md" 
+                            : "hover:bg-muted/50 text-foreground/80 hover:text-foreground rounded-md"
                         )}
                       >
-                        <div className={cn("p-1.5 rounded-md", isSelected ? "bg-background shadow-sm" : "bg-muted/50 group-hover:bg-background group-hover:shadow-sm")}>
-                          {getStatusIcon(change.status)}
-                        </div>
-                        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-                          <span className="text-sm font-medium truncate" title={name}>
-                            {name}
-                          </span>
-                          {dir && (
-                            <span className="text-[10px] truncate opacity-60" title={dir}>
-                              {dir}
+                        <button
+                          onClick={() => setSelectedFile(change.path)}
+                          className="flex-1 flex items-center gap-3 px-3 py-2.5 text-left transition-all duration-200 min-w-0"
+                        >
+                          <div className={cn("p-1.5 rounded-md shrink-0", isSelected ? "bg-background shadow-sm" : "bg-muted/50 group-hover:bg-background group-hover:shadow-sm")}>
+                            {getStatusIcon(change.status)}
+                          </div>
+                          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                            <span className="text-sm font-medium truncate" title={name}>
+                              {name}
                             </span>
+                            {dir && (
+                              <span className="text-[10px] truncate opacity-60" title={dir}>
+                                {dir}
+                              </span>
+                            )}
+                          </div>
+                          {isSelected && !isDiscarding && (
+                             <div className="shrink-0">
+                               {getStatusBadge(change.status)}
+                             </div>
                           )}
+                        </button>
+                        
+                        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                           <Popconfirm
+                             title="Discard Changes"
+                             description={`Discard all changes in ${name}? This cannot be undone.`}
+                             onConfirm={() => { handleDiscard(null as any, change.path); }}
+                           >
+                             <button
+                               disabled={isDiscarding}
+                               className="p-1.5 hover:bg-destructive/10 text-muted-foreground hover:text-destructive rounded transition-colors"
+                               onClick={(e) => e.stopPropagation()}
+                               title="Discard changes"
+                             >
+                               {isDiscarding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                             </button>
+                           </Popconfirm>
                         </div>
-                        <div className={cn("transition-opacity duration-200", isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
-                          {getStatusBadge(change.status)}
-                        </div>
+
                         {isSelected && (
                           <div className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-primary rounded-r-md" />
                         )}
-                      </button>
-                    )
-                  })}
-                </div>
+                      </div>
+
+                    </React.Fragment>
+                  )
+                })}
+              </div>
               </div>
             )}
           </div>
@@ -264,44 +356,108 @@ export const DiffViewerDialog = ({ isOpen, onOpenChange, repoPath, repoName }: D
                      </div>
                  </div>
                  
-                 {/* Diff Content */}
-                 <div className="flex-1 overflow-auto pt-16 px-4 pb-4">
-                     <div className="rounded-md border bg-card shadow-sm overflow-hidden text-sm [&>table]:w-full relative">
-                        <ReactDiffViewer
-                            oldValue={diffContent?.original_content || ''}
-                            newValue={diffContent?.modified_content || ''}
-                            splitView={true}
-                            useDarkTheme={resolvedTheme === 'dark'}
-                            leftTitle="HEAD (Original)"
-                            rightTitle="Working Tree (Modified)"
-                            styles={{
-                                variables: {
-                                    dark: {
-                                        diffViewerBackground: 'transparent',
-                                        diffViewerColor: 'hsl(var(--foreground))',
-                                        addedBackground: 'rgba(34, 197, 94, 0.05)',
-                                        addedColor: 'hsl(var(--foreground))',
-                                        removedBackground: 'rgba(239, 68, 68, 0.05)',
-                                        removedColor: 'hsl(var(--foreground))',
-                                        wordAddedBackground: 'rgba(34, 197, 94, 0.25)',
-                                        wordRemovedBackground: 'rgba(239, 68, 68, 0.25)',
-                                        addedGutterBackground: 'rgba(34, 197, 94, 0.1)',
-                                        removedGutterBackground: 'rgba(239, 68, 68, 0.1)',
-                                        gutterBackground: 'hsl(var(--muted)/0.3)',
-                                        gutterBackgroundDark: 'hsl(var(--muted)/0.3)',
-                                        highlightBackground: 'hsl(var(--accent))',
-                                        highlightGutterBackground: 'hsl(var(--accent))',
-                                        codeFoldGutterBackground: 'hsl(var(--muted)/0.5)',
-                                        codeFoldBackground: 'hsl(var(--muted)/0.2)',
-                                        emptyLineBackground: 'transparent',
-                                        gutterColor: 'hsl(var(--muted-foreground))',
-                                        addedGutterColor: 'rgba(34, 197, 94, 0.8)',
-                                        removedGutterColor: 'rgba(239, 68, 68, 0.8)',
+                 {/* Segmented Diff Content */}
+                 <div className="flex-1 overflow-auto pt-16 px-4 pb-4 space-y-8">
+                     {diffContent?.hunks && diffContent.hunks.length > 0 ? (
+                       diffContent.hunks.map((hunk, idx) => {
+                         const { oldValue, newValue } = parseHunk(hunk.patch);
+                         return (
+                           <div key={idx} className="flex flex-col">
+                             <div className="flex items-center justify-between bg-muted/20 px-3 py-2 border-x border-t rounded-t-md">
+                               <span className="font-mono text-[11px] text-muted-foreground">
+                                 {hunk.header}
+                               </span>
+                               <Popconfirm
+                                 title="Discard Segment"
+                                 description="Undo only this segment of changes? This cannot be reversed."
+                                 onConfirm={() => handleDiscardHunk(hunk.patch)}
+                               >
+                                 <Button
+                                   variant="ghost"
+                                   size="sm"
+                                   className="h-7 px-2 text-[11px] gap-1.5 hover:bg-destructive/10 hover:text-destructive"
+                                   disabled={isHunkDiscarding}
+                                 >
+                                   {isHunkDiscarding ? <Loader2 className="h-3 w-3 animate-spin" /> : <Undo className="h-3 w-3" />}
+                                   Discard Segment
+                                 </Button>
+                               </Popconfirm>
+                             </div>
+                             <div className="rounded-b-md border bg-card shadow-sm overflow-hidden text-sm [&>table]:w-full relative">
+                                <ReactDiffViewer
+                                    oldValue={oldValue}
+                                    newValue={newValue}
+                                    splitView={true}
+                                    useDarkTheme={resolvedTheme === 'dark'}
+                                    styles={{
+                                        variables: {
+                                            dark: {
+                                                diffViewerBackground: 'transparent',
+                                                diffViewerColor: 'hsl(var(--foreground))',
+                                                addedBackground: 'rgba(34, 197, 94, 0.05)',
+                                                addedColor: 'hsl(var(--foreground))',
+                                                removedBackground: 'rgba(239, 68, 68, 0.05)',
+                                                removedColor: 'hsl(var(--foreground))',
+                                                wordAddedBackground: 'rgba(34, 197, 94, 0.25)',
+                                                wordRemovedBackground: 'rgba(239, 68, 68, 0.25)',
+                                                addedGutterBackground: 'rgba(34, 197, 94, 0.1)',
+                                                removedGutterBackground: 'rgba(239, 68, 68, 0.1)',
+                                                gutterBackground: 'hsl(var(--muted)/0.3)',
+                                                gutterBackgroundDark: 'hsl(var(--muted)/0.3)',
+                                                highlightBackground: 'hsl(var(--accent))',
+                                                highlightGutterBackground: 'hsl(var(--accent))',
+                                                codeFoldGutterBackground: 'hsl(var(--muted)/0.5)',
+                                                codeFoldBackground: 'hsl(var(--muted)/0.2)',
+                                                emptyLineBackground: 'transparent',
+                                                gutterColor: 'hsl(var(--muted-foreground))',
+                                                addedGutterColor: 'rgba(34, 197, 94, 0.8)',
+                                                removedGutterColor: 'rgba(239, 68, 68, 0.8)',
+                                            }
+                                        }
+                                    }}
+                                />
+                             </div>
+                           </div>
+                         );
+                       })
+                     ) : (
+                        <div className="rounded-md border bg-card shadow-sm overflow-hidden text-sm [&>table]:w-full relative">
+                            <ReactDiffViewer
+                                oldValue={diffContent?.original_content || ''}
+                                newValue={diffContent?.modified_content || ''}
+                                splitView={true}
+                                useDarkTheme={resolvedTheme === 'dark'}
+                                leftTitle="HEAD (Original)"
+                                rightTitle="Working Tree (Modified)"
+                                styles={{
+                                    variables: {
+                                        dark: {
+                                            diffViewerBackground: 'transparent',
+                                            diffViewerColor: 'hsl(var(--foreground))',
+                                            addedBackground: 'rgba(34, 197, 94, 0.05)',
+                                            addedColor: 'hsl(var(--foreground))',
+                                            removedBackground: 'rgba(239, 68, 68, 0.05)',
+                                            removedColor: 'hsl(var(--foreground))',
+                                            wordAddedBackground: 'rgba(34, 197, 94, 0.25)',
+                                            wordRemovedBackground: 'rgba(239, 68, 68, 0.25)',
+                                            addedGutterBackground: 'rgba(34, 197, 94, 0.1)',
+                                            removedGutterBackground: 'rgba(239, 68, 68, 0.1)',
+                                            gutterBackground: 'hsl(var(--muted)/0.3)',
+                                            gutterBackgroundDark: 'hsl(var(--muted)/0.3)',
+                                            highlightBackground: 'hsl(var(--accent))',
+                                            highlightGutterBackground: 'hsl(var(--accent))',
+                                            codeFoldGutterBackground: 'hsl(var(--muted)/0.5)',
+                                            codeFoldBackground: 'hsl(var(--muted)/0.2)',
+                                            emptyLineBackground: 'transparent',
+                                            gutterColor: 'hsl(var(--muted-foreground))',
+                                            addedGutterColor: 'rgba(34, 197, 94, 0.8)',
+                                            removedGutterColor: 'rgba(239, 68, 68, 0.8)',
+                                        }
                                     }
-                                }
-                            }}
-                        />
-                     </div>
+                                }}
+                            />
+                        </div>
+                     )}
                  </div>
               </div>
             )}

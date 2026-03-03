@@ -3,7 +3,7 @@ import {
     Table, TableHeader, TableBody, TableRow, TableHead, TableCell, 
     Badge, Button 
 } from "./ui/core";
-import { GitCommit, ArrowUpCircle, Trash2, Eye } from "lucide-react";
+import { GitCommit, ArrowUpCircle, Trash2, Eye, Undo } from "lucide-react";
 import { OpenWithMenu } from "./OpenWithMenu";
 import { Popconfirm } from "./ui/Popconfirm";
 
@@ -14,12 +14,13 @@ interface RepoTableProps {
   onPush: (path: string) => void;
   onDelete: (path: string) => void;
   onViewChanges: (path: string) => void;
+  onDiscardAll: (path: string) => void;
   selectedPaths: Set<string>;
   onSelectionChange: (paths: Set<string>) => void;
 }
 
 export const RepoTable = ({ 
-  data, isScanning, onCommit, onPush, onDelete, onViewChanges,
+  data, isScanning, onCommit, onPush, onDelete, onViewChanges, onDiscardAll,
   selectedPaths, onSelectionChange
 }: RepoTableProps) => {
   const allSelected = data.length > 0 && data.every(r => selectedPaths.has(r.path));
@@ -108,6 +109,16 @@ export const RepoTable = ({
                     >
                       <Button size="icon" variant="ghost" className="text-muted-foreground hover:text-destructive" title="Delete">
                           <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </Popconfirm>
+                    <Popconfirm
+                      title="Discard Changes"
+                      description="Discard all changes in this repository? This cannot be undone."
+                      onConfirm={() => onDiscardAll(repo.path)}
+                      variant="destructive"
+                    >
+                      <Button size="icon" variant="ghost" disabled={!repo.is_dirty} className="text-muted-foreground hover:text-destructive" title="Discard Changes">
+                          <Undo className="h-4 w-4" />
                       </Button>
                     </Popconfirm>
                     <Button size="icon" variant="ghost" onClick={() => onViewChanges(repo.path)} disabled={!repo.is_dirty} className="text-muted-foreground hover:text-primary" title="View Changes">
