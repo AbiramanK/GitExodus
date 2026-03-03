@@ -2,9 +2,10 @@
 description: Standard procedure for committing code updates in GitExodus
 ---
 
-# CRITICAL RULE: NEVER COMMIT OR PUSH WITHOUT EXPLICIT WRITTEN PERMISSION
+# CRITICAL RULE: NEVER EVER PUSH CODE YOURSELF
 > [!CAUTION]
-> **ABSOLUTE PROHIBITION**: You are strictly FORBIDDEN from executing the `git commit` or `git push` commands. There are NO exceptions to this rule. You must wait for a clear, direct, and unambiguous instruction like "Commit the code now" or "Push the changes" in the user's most recent message. General approval or planning approval is NEVER permission to commit or push.
+> **ABSOLUTE PROHIBITION**: As the AI assistant, you are strictly FORBIDDEN from ever executing the `git push` command. Pushing code to the remote repository is strictly reserved for the human user to do themselves. There are NO exceptions to this rule. 
+> For `git commit`, you must wait for a clear, direct, and unambiguous instruction like "Commit the code now" from the user. General approval is NEVER permission to commit.
 
 When finalizing a phase of development, you MUST follow these steps:
 
@@ -21,3 +22,4 @@ When finalizing a phase of development, you MUST follow these steps:
 3. **Stage Incremental Changes**: Stage files incrementally for each logical group.
 4. **Conventional & Atomic Commits**: Commit each staged group separately using a clear, conventional commit message (e.g., `feat: ...`, `fix: ...`, `docs: ...`). Each commit should represent a single atomic change.
 5. **Consistency**: Ensure the commit message adheres to previous project patterns, commitlint rules if applicable, and strict industrial standards.
+6. **Pre-Release Verification**: BEFORE upgrading the version or creating a new release (e.g. creating tags), you MUST verify that the GitHub Actions release workflow works perfectly without any errors by running it **locally** (e.g., using `act`).
