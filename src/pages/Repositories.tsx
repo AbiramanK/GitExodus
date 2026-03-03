@@ -2,20 +2,30 @@ import { useEffect, useState } from 'react';
 import { useScan } from '../hooks/useScan';
 import { useRepoTable } from '../hooks/table/v2/useRepoTable';
 import { Button, Input } from '../components/ui/core';
-import { useCommitRepoMutation, usePushRepoMutation, useDeleteRepoMutation, useBulkCommitAndPushMutation } from '../redux/api/v2/gitApi';
-import { Search, RotateCcw, Rocket, GitMerge, Loader2, Folder } from 'lucide-react';
+import { 
+  useCommitRepoMutation, 
+  usePushRepoMutation, 
+  useDeleteRepoMutation, 
+  useBulkCommitAndPushMutation,
+  useDiscardAllChangesMutation
+} from '../redux/api/v2/gitApi';
+import { Search, RotateCcw, Rocket, GitMerge, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { RepoTable } from '../components/RepoTable';
+import { RepoTreeView } from '../components/RepoTreeView';
+import { groupRepositoriesByFolder } from '../lib/repoUtils';
 import { CommitDialog } from '../components/CommitDialog';
 import { DiffViewerDialog } from '../components/DiffViewerDialog';
 import { BulkActionBar } from '../components/BulkActionBar';
 import { Popconfirm } from '../components/ui/Popconfirm';
 import { BulkResult } from '../redux/api/v2/apiResponse';
+import { LayoutList, LayoutGrid } from 'lucide-react';
 
 const UNIVERSAL_COMMIT_MSG = 'chore: bulk sync via GitExodus';
 
 export const Repositories = () => {
   const { repositories, isScanning, handleScan } = useScan(true);
+  const [viewMode, setViewMode] = useState<'list' | 'tree'>('list');
   
   const [commitRepo] = useCommitRepoMutation();
   const [pushRepo] = usePushRepoMutation();
@@ -61,31 +71,80 @@ export const Repositories = () => {
       if (selectedRepo) { commitRepo({ path: selectedRepo.path, message }); setCommitDialogOpen(false); }
   };
 
-  const actionableCount = repositories.filter(r => r.is_dirty || r.has_unpushed_commits).length;
+  // Wrapper functions for RepoTable/TreeView props
+  const [discardAll] = useDiscardAllChangesMutation();
+  const handleDiscardAll = (path: string) => discardAll(path);
+
+  const handlePush = (path: string) => pushRepo(path);
+  const handleDelete = (path: string) => deleteRepo(path);
+  const handleViewChanges = (p: string) => { 
+    const r = repositories.find(r => r.path === p);
+    if (r) { setSelectedRepo({path: p, name: r.name }); setDiffDialogOpen(true); }
+  };
 
   return (
     <div className="p-8 space-y-6 pb-32">
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-2">
-              <Folder className="h-8 w-8 text-muted-foreground" />
-              Repositories
-          </h1>
-          <p className="text-muted-foreground">Manage and track your local git projects.</p>
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex flex-1 items-center gap-2 max-w-md">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search repositories..."
+              className="pl-8 bg-card"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <Button variant="outline" size="icon" onClick={handleScan} disabled={isScanning} className="shrink-0" title="Refresh">
+            <RotateCcw className={cn("h-4 w-4", isScanning && "animate-spin")} />
+          </Button>
+          
+          <div className="flex items-center border rounded-md p-1 bg-muted/20 ml-2">
+            <Button 
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
+                size="icon" 
+                className="h-8 w-8"
+                onClick={() => setViewMode('list')}
+                title="List View"
+            >
+                <LayoutList className="h-4 w-4" />
+            </Button>
+            <Button 
+                variant={viewMode === 'tree' ? 'secondary' : 'ghost'} 
+                size="icon" 
+                className="h-8 w-8"
+                onClick={() => setViewMode('tree')}
+                title="Tree View"
+            >
+                <LayoutGrid className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button onClick={handleScan} disabled={isScanning} size="sm" variant="outline">
-            <RotateCcw className={cn("mr-2 h-4 w-4", isScanning && "animate-spin")} /> {isScanning ? "Scanning..." : "Scan"}
+        
+        <div className="flex gap-2 shrink-0">
+          <Button 
+            variant="outline" 
+            onClick={() => { setFilterDirty(!filterDirty); setFilterUnpushed(false); }}
+            className={cn(filterDirty && "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20")}
+          >
+            Dirty ({repositories.filter(r => r.is_dirty).length})
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => { setFilterUnpushed(!filterUnpushed); setFilterDirty(false); }}
+            className={cn(filterUnpushed && "bg-amber-500/10 text-amber-600 border-amber-500/20 hover:bg-amber-500/20")}
+          >
+            Unpushed ({repositories.filter(r => r.has_unpushed_commits).length})
           </Button>
           <Popconfirm
-            title="Universal Commit & Push All"
-            description={`This will commit and push all dirty/unpushed branches across ${actionableCount} repos. Confirm?`}
-            onConfirm={handleUniversalCommitPushAll}
+             title="Bulk Commit & Push"
+             description="This will commit (if dirty) and push all changed repositories using the universal message."
+             onConfirm={handleUniversalCommitPushAll}
           >
-            <Button size="sm" disabled={universalLoading || actionableCount === 0} className="gap-2 bg-linear-to-r from-blue-600 to-indigo-700 text-white shadow-lg">
-              {universalLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
-              Sync All Repos
-            </Button>
+             <Button variant="default" className="bg-primary text-primary-foreground">
+               {universalLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Rocket className="h-4 w-4 mr-2" />}
+               Sync All
+             </Button>
           </Popconfirm>
         </div>
       </div>
@@ -97,24 +156,33 @@ export const Repositories = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-3 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search repositories..." className="pl-10" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-        </div>
-        <div className="flex gap-2">
-            <Button variant={filterDirty ? "default" : "outline"} size="sm" onClick={() => setFilterDirty(!filterDirty)}>Dirty</Button>
-            <Button variant={filterUnpushed ? "default" : "outline"} size="sm" onClick={() => setFilterUnpushed(!filterUnpushed)}>Unpushed</Button>
-        </div>
+      <div className="relative min-h-100">
+        {viewMode === 'list' ? (
+            <RepoTable 
+                data={filteredData} 
+                isScanning={isScanning}
+                onCommit={handleCommit}
+                onPush={handlePush}
+                onDelete={handleDelete}
+                onViewChanges={handleViewChanges}
+                onDiscardAll={handleDiscardAll}
+                selectedPaths={selectedPaths}
+                onSelectionChange={setSelectedPaths}
+            />
+        ) : (
+            <RepoTreeView 
+                groups={groupRepositoriesByFolder(filteredData)}
+                isScanning={isScanning}
+                onCommit={handleCommit}
+                onPush={handlePush}
+                onDelete={handleDelete}
+                onViewChanges={handleViewChanges}
+                onDiscardAll={handleDiscardAll}
+                selectedPaths={selectedPaths}
+                onSelectionChange={setSelectedPaths}
+            />
+        )}
       </div>
-
-      <RepoTable 
-        data={filteredData} isScanning={isScanning} onCommit={handleCommit} onPush={pushRepo} onDelete={deleteRepo} onViewChanges={(p) => { 
-          const r = repositories.find(r => r.path === p);
-          if (r) { setSelectedRepo({path: p, name: r.name }); setDiffDialogOpen(true); }
-        }} 
-        selectedPaths={selectedPaths} onSelectionChange={setSelectedPaths}
-      />
 
       <BulkActionBar 
         selectedCount={selectedPaths.size} selectedPaths={Array.from(selectedPaths)} 
