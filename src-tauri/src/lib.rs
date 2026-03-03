@@ -24,6 +24,8 @@ pub fn run() {
             get_repo_changes,
             get_file_diff_content,
             bulk_commit_and_push,
+            discard_file_changes,
+            discard_all_changes,
             exit_app
         ])
         .on_window_event(|window, event| {
