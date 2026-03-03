@@ -46,6 +46,7 @@ Full documentation is available at: **[https://abiramank.github.io/GitExodus/](h
 - 📜 **[License](LICENSE)**: MIT License.
 
 ## Additional Resources
+- 📊 **[Release Notes](RELEASES.md)**: Version-by-version change log.
 - [Session History](SESSION_HISTORY.md)
 - [Task List & Roadmap](TASKS.md)
 
