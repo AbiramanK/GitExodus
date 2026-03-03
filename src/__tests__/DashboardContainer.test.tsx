@@ -31,7 +31,22 @@ describe('Dashboard Component', () => {
 
   it('triggers scan on button click', async () => {
     const { invoke } = await import('@tauri-apps/api/core');
-    renderWithProviders(<Dashboard />);
+    renderWithProviders(<Dashboard />, {
+      preloadedState: {
+        repos: {
+          repositories: [{ 
+            name: 'r', path: '/r', is_dirty: false, current_branch: 'main', 
+            local_branches: ['main'], remote_url: 'u', has_unpushed_commits: false 
+          }],
+          isScanning: false,
+          scanError: null,
+          scanRoots: ['/root']
+        }
+      }
+    });
+
+    vi.clearAllMocks(); // Clear the mount auto-scan if any
+    
     const scanButton = screen.getByRole('button', { name: /scan/i });
     fireEvent.click(scanButton);
     expect(invoke).toHaveBeenCalledWith('scan_repos', expect.anything());
