@@ -53,9 +53,19 @@
 - [x] Enforce mandatory pre-commit testing in agent workflows
 - [x] Governance: Prohibit unauthorized git push
 
+## v0.3.0 Release (Completed)
+- [x] Feature: Hunk-level Discard (Granular revert)
+- [x] Feature: Segmented Diff Viewer (Collapsible hunks)
+- [x] UI: Inline discard buttons in diff segments
+- [x] UI: Directional back-navigation in diff header
+- [x] Documentation: Interactive Landing Page Docs (User/Developer)
+- [x] Documentation: PR guidelines and contributor onboarding
+- [x] Branding: Standardized Undo iconography
+
 ## Future Roadmap (Planned)
 - [ ] Branch management (Create, Checkout, Delete branches)
 - [ ] Detailed commit history view for each repo
 - [ ] Conflict resolution UI for merge/rebase
 - [ ] Support for other version control systems (e.g., Mercurial)
 - [ ] Customizable scan ignore list via UI settings
+- [ ] Multi-select hunk discard (batch segment revert)

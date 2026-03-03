@@ -77,9 +77,20 @@
 - **Dynamic Routing**: Built a state-driven page switching mechanism to support multi-view application architecture.
 - **Dialog System Integration**: Integrated and initialized `tauri-plugin-dialog` for native filesystem interactions.
 - **UI/UX Refinement**: Enhanced the landing page with a premium Framer Motion screenshot carousel. Further refined the application architecture by moving the Theme Switch to the sidebar for global access, adding a "Scan Ecosystem" button to the Analytics Dashboard, and simplifying the sidebar by removing unnecessary user profile details. Restructured the sidebar footer to feature distinct, vertically stacked "Theme Switch" and "Exit" buttons for improved accessibility.
-### Current State (v0.2.0 Release)
-- **Stability**: Highly stable, production-ready local builds.
-- **UX**: Fast, responsive Analytics Dashboard with multi-root scanning.
-- **Safety**: Safe deletion and Exit Confirmation logic fully operational.
-- **Branding**: Native high-fidelity logo and favicon integration complete.
-- **CI/CD**: Automated release and landing page deployment verified.
+## 2026-03-03
+### Granular Control & Documentation
+- **Hunk-Level Discard**: Implemented the ability to discard specific code segments (hunks) within a file without reverting the entire file.
+- **Backend (Rust)**: Updated `git_logic.rs` to extract individual hunk patches and implemented `discard_hunk` using `git apply -R`.
+- **Frontend (React/Redux)**: Added `discardHunk` mutation and updated UI models to support hunk-level data.
+- **Segmented Diff Viewer**: Redesigned the diff viewer in `DiffViewerDialog` to render individual hunks as collapsible cards with inline "Discard" buttons, significantly improving the user experience for granular changes.
+- **Improved UI Navigation**: Replaced the "X" close button in the diff viewer header with a "Back" button on the left for better navigation flow.
+- **Standardized Iconography**: Standardized the use of the `Undo` icon for all discard/revert actions across the application.
+- **Enhanced Documentation**: Built a comprehensive, interactive Documentation section on the landing page with separate tabs for Users (Installation) and Developers (Setup & PR Guidelines).
+- **Landing Page Polish**: Updated the landing page navbar and layout to improve accessibility and onboarding for new users and contributors.
+
+### Current State (v0.3.0 Release)
+- **Granular Control**: Industry-standard hunk-level revert functionality now fully operational.
+- **UX**: Professional, segmented diff viewer with inline actions and intuitive navigation.
+- **Documentation**: Comprehensive guides for both users and developers integrated directly into the landing page.
+- **Stability**: Backend logic remains highly performant, utilizing direct Git patches for safe operations.
+- **Branding**: Continued refinement of the high-fidelity bird identity across all touchpoints.
