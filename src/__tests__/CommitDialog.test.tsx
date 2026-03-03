@@ -2,39 +2,45 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CommitDialog } from '../components/CommitDialog';
 
-describe('CommitDialog Component', () => {
-  const defaultProps = {
-    isOpen: true,
-    onOpenChange: vi.fn(),
-    onConfirm: vi.fn(),
-    repoName: 'test-repo',
-  };
+describe('CommitDialog', () => {
+    const mockProps = {
+        isOpen: true,
+        onOpenChange: vi.fn(),
+        onConfirm: vi.fn(),
+        repoName: 'test-repo',
+    };
 
-  it('renders correctly when open', () => {
-    render(<CommitDialog {...defaultProps} />);
-    expect(screen.getByText('Commit Changes')).toBeInTheDocument();
-    expect(screen.getByText('test-repo')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Commit message...')).toBeInTheDocument();
-  });
+    it('renders with repo name', () => {
+        render(<CommitDialog {...mockProps} />);
+        expect(screen.getByText('test-repo')).toBeInTheDocument();
+        expect(screen.getByPlaceholderText('Commit message...')).toBeInTheDocument();
+    });
 
-  it('calls onConfirm with message when Commit button is clicked', () => {
-    render(<CommitDialog {...defaultProps} />);
-    const input = screen.getByPlaceholderText('Commit message...');
-    const commitButton = screen.getByRole('button', { name: /commit/i });
+    it('calls onConfirm with message on submit', () => {
+        render(<CommitDialog {...mockProps} />);
+        const input = screen.getByPlaceholderText('Commit message...');
+        fireEvent.change(input, { target: { value: 'custom message' } });
+        
+        const commitBtn = screen.getByRole('button', { name: /commit/i });
+        fireEvent.click(commitBtn);
+        
+        expect(mockProps.onConfirm).toHaveBeenCalledWith('custom message');
+        expect(mockProps.onOpenChange).toHaveBeenCalledWith(false);
+    });
 
-    fireEvent.change(input, { target: { value: 'feat: experimental feature' } });
-    fireEvent.click(commitButton);
+    it('calls onOpenChange(false) when Cancel is clicked', () => {
+        render(<CommitDialog {...mockProps} />);
+        const cancelBtn = screen.getByRole('button', { name: /cancel/i });
+        fireEvent.click(cancelBtn);
+        expect(mockProps.onOpenChange).toHaveBeenCalledWith(false);
+    });
 
-    expect(defaultProps.onConfirm).toHaveBeenCalledWith('feat: experimental feature');
-  });
-
-  it('disables commit button when message is empty', () => {
-    render(<CommitDialog {...defaultProps} />);
-    const input = screen.getByPlaceholderText('Commit message...');
-    const commitButton = screen.getByRole('button', { name: /commit/i });
-    
-    // Default message is present, so we clear it
-    fireEvent.change(input, { target: { value: '' } });
-    expect(commitButton).toBeDisabled();
-  });
+    it('disables commit button when message is empty', () => {
+        render(<CommitDialog {...mockProps} />);
+        const input = screen.getByPlaceholderText('Commit message...');
+        fireEvent.change(input, { target: { value: '   ' } });
+        
+        const commitBtn = screen.getByRole('button', { name: /commit/i });
+        expect(commitBtn).toBeDisabled();
+    });
 });

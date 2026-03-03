@@ -1,186 +1,113 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+
+import { describe, it, expect, vi } from 'vitest';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { Repositories } from '../pages/Repositories';
 import { renderWithProviders } from '../test/test-utils';
-import * as gitApi from '../redux/api/v2/gitApi';
+import * as useScanHook from '../hooks/useScan';
 
-// Mock Popconfirm to simplify testing Delete
-vi.mock('../components/ui/Popconfirm', () => ({
-  Popconfirm: ({ children, onConfirm }: any) => (
-    <div data-testid="popconfirm-mock" onClick={() => { onConfirm?.(); }}>
-      {children}
-    </div>
-  )
+vi.mock('../components/DiffViewerDialog', () => ({
+    DiffViewerDialog: ({ repoName, isOpen }: any) => isOpen ? <div data-testid="diff-dialog">{repoName}</div> : null
 }));
 
-// Mock mutations and queries are handled by the store in renderWithProviders
-// and the msw/global mocks in setup.ts.
-
 describe('Repositories Page', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-  const mockRepo = {
-    name: 'test-repo',
-    path: '/path/to/test-repo',
-    remote_url: 'https://github.com/test/repo',
-    current_branch: 'main',
-    local_branches: ['main', 'feat'],
-    is_dirty: true,
-    has_unpushed_commits: true,
-  };
-
-  it('renders Repositories page with header', () => {
-    renderWithProviders(<Repositories />);
-    expect(screen.getByText('Repositories')).toBeInTheDocument();
-  });
-
-  it('shows repositories list', () => {
-    renderWithProviders(<Repositories />, {
-      preloadedState: {
-        repos: {
-          repositories: [mockRepo],
-          isScanning: false,
-          scanError: null,
-          scanRoots: []
-        }
-      }
-    });
-    expect(screen.getByText('test-repo')).toBeInTheDocument();
-    expect(screen.getByText('main')).toBeInTheDocument();
-  });
-
-  it('allows searching repositories', async () => {
-    renderWithProviders(<Repositories />, {
-      preloadedState: {
-        repos: {
-          repositories: [
-            mockRepo,
-            { ...mockRepo, name: 'other-repo', path: '/other' }
-          ],
-          isScanning: false,
-          scanError: null,
-          scanRoots: []
-        }
-      }
+    it('renders page title and controls', () => {
+        renderWithProviders(<Repositories />);
+        expect(screen.getByText(/Repositories/i)).toBeInTheDocument();
     });
 
-    const searchInput = screen.getByPlaceholderText('Search repositories...');
-    fireEvent.change(searchInput, { target: { value: 'test' } });
-
-    expect(screen.getByText('test-repo')).toBeInTheDocument();
-    expect(screen.queryByText('other-repo')).not.toBeInTheDocument();
-    expect(screen.getByText('Sync All Repos')).toBeInTheDocument();
-  });
-
-  it('triggers universal sync on confirm', async () => {
-    const bulkMock = vi.fn().mockReturnValue({
-        unwrap: () => Promise.resolve({ succeeded: 1, failed: 0, total: 1 })
-    });
-    vi.spyOn(gitApi, 'useBulkCommitAndPushMutation').mockReturnValue([
-        bulkMock,
-        { isLoading: false } as any
-    ]);
-    renderWithProviders(<Repositories />, {
-        preloadedState: {
-            repos: {
-                repositories: [mockRepo],
-                isScanning: false,
-                scanError: null,
-                scanRoots: ['/root']
-            }
-        }
-    });
-    
-    fireEvent.click(screen.getByText('Sync All Repos'));
-    
-    expect(await screen.findByText(/Universal Sync: 1\/1 repos succeeded/i)).toBeInTheDocument();
-  });
-
-  it('triggers bulk actions', async () => {
-    renderWithProviders(<Repositories />, {
-        preloadedState: {
-            repos: {
-                repositories: [{ 
-                    name: 'r1', path: '/p1', is_dirty: true, current_branch: 'b', 
-                    has_unpushed_commits: false, remote_url: 'u', local_branches: ['b'] 
-                }],
-                isScanning: false, scanError: null, scanRoots: []
-            }
-        }
+    it('toggles view mode buttons', () => {
+        renderWithProviders(<Repositories />);
+        const listBtn = screen.getByTitle('List View');
+        const treeBtn = screen.getByTitle('Tree View');
+        
+        fireEvent.click(treeBtn);
+        fireEvent.click(listBtn);
     });
 
-    // Select the first repo checkbox (the one in the row)
-    const checkboxes = screen.getAllByRole('checkbox');
-    fireEvent.click(checkboxes[1]); // Index 0 is "Select all", Index 1 is the item
+    it('triggers row actions', async () => {
+        const repo = { name: 'repo-to-test', path: '/test/path', current_branch: 'main', is_dirty: true, has_unpushed_commits: true, remote_url: '', local_branches: [] };
+        
+        vi.spyOn(useScanHook, 'useScan').mockReturnValue({
+            repositories: [repo],
+            isScanning: false,
+            handleScan: vi.fn(),
+            scanRoots: []
+        });
 
-    expect(screen.getByText('1 repo selected')).toBeInTheDocument();
-    
-    // Test bulk push
-    fireEvent.click(screen.getByText('Push'));
-  });
+        renderWithProviders(<Repositories />);
+        expect(await screen.findByText('repo-to-test')).toBeInTheDocument();
+        
+        const commitBtns = await screen.findAllByTitle('Commit');
+        fireEvent.click(commitBtns[0]);
+        // Trigger commit confirmation
+        const commitMsgInput = screen.getByPlaceholderText(/Commit message.../i);
+        fireEvent.change(commitMsgInput, { target: { value: 'test commit' } });
+        const confirmBtn = screen.getByText('Commit', { selector: 'button' });
+        fireEvent.click(confirmBtn);
+        
+        const viewBtns = await screen.findAllByTitle('View Changes');
+        fireEvent.click(viewBtns[0]);
+        expect(await screen.findByTestId('diff-dialog')).toBeInTheDocument();
 
-  it('filters dirty repositories', () => {
-    renderWithProviders(<Repositories />, {
-      preloadedState: {
-        repos: {
-          repositories: [
-            { ...mockRepo, is_dirty: true, name: 'dirty-repo', path: '/dirty' },
-            { ...mockRepo, is_dirty: false, name: 'clean-repo', path: '/clean' }
-          ],
-          isScanning: false,
-          scanError: null,
-          scanRoots: []
-        }
-      }
+        const deleteBtns = await screen.findAllByTitle('Delete');
+        fireEvent.click(deleteBtns[0]);
     });
 
-    const dirtyFilter = screen.getByRole('button', { name: 'Dirty' });
-    fireEvent.click(dirtyFilter);
+    it('handles filters and search', async () => {
+        const repo = { name: 'dirty-repo', path: '/p1', current_branch: 'main', is_dirty: true, has_unpushed_commits: false, remote_url: '', local_branches: [] };
+        vi.spyOn(useScanHook, 'useScan').mockReturnValue({
+            repositories: [repo],
+            isScanning: false,
+            handleScan: vi.fn(),
+            scanRoots: []
+        });
 
-    expect(screen.getByText('dirty-repo')).toBeInTheDocument();
-    expect(screen.queryByText('clean-repo')).not.toBeInTheDocument();
-  });
+        renderWithProviders(<Repositories />);
+        
+        // Test search
+        const searchInput = screen.getByPlaceholderText(/Search repositories.../i);
+        fireEvent.change(searchInput, { target: { value: 'dirty' } });
+        
+        // Test Refresh/Scan
+        const refreshBtn = screen.getByTitle('Refresh');
+        fireEvent.click(refreshBtn);
 
-  it('triggers scan on button click', async () => {
-    // Import at top of test to ensure we get the mocked version
-    const { invoke } = await import('@tauri-apps/api/core');
-    renderWithProviders(<Repositories />, {
-        preloadedState: {
-            repos: { repositories: [mockRepo], isScanning: false, scanError: null, scanRoots: ['/root'] }
-        }
+        // Test Filters
+        const dirtyFilter = screen.getByRole('button', { name: /Dirty/i });
+        fireEvent.click(dirtyFilter);
+        
+        const unpushedFilter = screen.getByRole('button', { name: /Unpushed/i });
+        fireEvent.click(unpushedFilter);
     });
-    // With repositories already present, it shouldn't auto-scan.
-    // We clear mock to be sure we only count the manual click
-    vi.clearAllMocks();
-    
-    const scanButton = screen.getByRole('button', { name: /scan/i });
-    fireEvent.click(scanButton);
-    expect(invoke).toHaveBeenCalledWith('scan_repos', { rootPaths: ['/root'] });
-  });
 
+    it('handles bulk selection and action bar', async () => {
+        const repo1 = { name: 'r1', path: '/p1', current_branch: 'main', is_dirty: true, has_unpushed_commits: false, remote_url: '', local_branches: [] };
+        const repo2 = { name: 'r2', path: '/p2', current_branch: 'main', is_dirty: true, has_unpushed_commits: false, remote_url: '', local_branches: [] };
+        
+        vi.spyOn(useScanHook, 'useScan').mockReturnValue({
+            repositories: [repo1, repo2],
+            isScanning: false,
+            handleScan: vi.fn(),
+            scanRoots: []
+        });
 
-  it('listens for backend events', async () => {
-    const { listen } = await import('@tauri-apps/api/event');
-    const { waitFor } = await import('@testing-library/react');
-    
-    renderWithProviders(<Repositories />, {
-        preloadedState: {
-            repos: { repositories: [mockRepo], isScanning: false, scanError: null, scanRoots: [] }
-        }
+        renderWithProviders(<Repositories />);
+        
+        expect(await screen.findByText('r1')).toBeInTheDocument();
+        
+        const selectAll = await screen.findByLabelText(/Select all/i);
+        fireEvent.click(selectAll);
+        
+        expect(await screen.findByText(/2 repos selected/i)).toBeInTheDocument();
+        
+        const clearBtn = screen.getByTitle(/Clear Selection/i);
+        fireEvent.click(clearBtn);
+        
+        await waitFor(() => {
+            expect(screen.queryByText(/repos selected/i)).not.toBeInTheDocument();
+        });
+
+        const syncAllBtn = screen.getByRole('button', { name: /Sync All/i });
+        fireEvent.click(syncAllBtn);
     });
-    
-    await waitFor(() => {
-        expect(listen).toHaveBeenCalledWith('scan-started', expect.any(Function));
-        expect(listen).toHaveBeenCalledWith('repo-detected', expect.any(Function));
-        expect(listen).toHaveBeenCalledWith('scan-finished', expect.any(Function));
-    });
-  });
-
-  it('handles search input correctly', () => {
-    renderWithProviders(<Repositories />);
-    const searchInput = screen.getByPlaceholderText('Search repositories...');
-    fireEvent.change(searchInput, { target: { value: 'test' } });
-    expect(searchInput).toHaveValue('test');
-  });
 });

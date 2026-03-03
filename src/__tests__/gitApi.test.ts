@@ -83,4 +83,52 @@ describe('gitApi', () => {
     expect(result.error).toBeDefined();
     expect(result.error).toBe('Error occurred');
   });
+
+  it('calls discard_file_changes', async () => {
+    (invoke as any).mockResolvedValue(undefined);
+    await store.dispatch(gitApi.endpoints.discardFileChanges.initiate({ repoPath: '/p', filePath: 'f' }));
+    expect(invoke).toHaveBeenCalledWith('discard_file_changes', { repoPath: '/p', filePath: 'f' });
+  });
+
+  it('calls discard_hunk', async () => {
+    (invoke as any).mockResolvedValue(undefined);
+    await store.dispatch(gitApi.endpoints.discardHunk.initiate({ repoPath: '/p', patch: 'pt' }));
+    expect(invoke).toHaveBeenCalledWith('discard_hunk', { repoPath: '/p', patch: 'pt' });
+  });
+
+  it('calls discard_all_changes', async () => {
+    (invoke as any).mockResolvedValue(undefined);
+    await store.dispatch(gitApi.endpoints.discardAllChanges.initiate('/p'));
+    expect(invoke).toHaveBeenCalledWith('discard_all_changes', { repoPath: '/p' });
+  });
+
+  it('handles commit_repo error', async () => {
+    (invoke as any).mockRejectedValue('Commit failed');
+    const result = await store.dispatch(gitApi.endpoints.commitRepo.initiate({ path: '/p', message: 'm' }));
+    expect(result.error).toBe('Commit failed');
+  });
+
+  it('handles push_repo error', async () => {
+    (invoke as any).mockRejectedValue('Push failed');
+    const result = await store.dispatch(gitApi.endpoints.pushRepo.initiate('/p'));
+    expect(result.error).toBe('Push failed');
+  });
+
+  it('handles delete_repo error', async () => {
+    (invoke as any).mockRejectedValue('Delete failed');
+    const result = await store.dispatch(gitApi.endpoints.deleteRepo.initiate('/p'));
+    expect(result.error).toBe('Delete failed');
+  });
+
+  it('handles open_folder error', async () => {
+    (invoke as any).mockRejectedValue('Open failed');
+    const result = await store.dispatch(gitApi.endpoints.openFolder.initiate('/p'));
+    expect(result.error).toBe('Open failed');
+  });
+
+  it('handles bulkCommitAndPush error', async () => {
+    (invoke as any).mockRejectedValue('Bulk failed');
+    const result = await store.dispatch(gitApi.endpoints.bulkCommitAndPush.initiate({ paths: ['/p'], message: 'm' }));
+    expect(result.error).toBe('Bulk failed');
+  });
 });

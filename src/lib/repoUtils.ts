@@ -15,7 +15,7 @@ export const groupRepositoriesByFolder = (repos: RepositoryInfo[]): RepoGroup[] 
     const parts = path.split('/');
     
     // The immediate parent is the second to last element
-    const folderName = parts.length > 1 ? parts[parts.length - 2] : 'Root';
+    const folderName = parts.length > 1 ? (parts[parts.length - 2] || 'Root') : 'Root';
     
     // The base path is everything BEFORE the repo name
     const basePath = parts.slice(0, -1).join('/') + '/';

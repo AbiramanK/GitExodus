@@ -3,6 +3,7 @@ import { screen, fireEvent } from '@testing-library/react';
 import { Dashboard } from '../pages/Dashboard';
 import { renderWithProviders } from '../test/test-utils';
 
+
 // Mock chart components and lucide
 vi.mock('lucide-react', async () => {
     const actual = await vi.importActual('lucide-react') as any;

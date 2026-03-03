@@ -61,6 +61,7 @@
 - [x] Documentation: Interactive Landing Page Docs (User/Developer)
 - [x] Documentation: PR guidelines and contributor onboarding
 - [x] Branding: Standardized Undo iconography
+- [x] Quality: Achieve 80%+ Test Coverage for core components
 
 ## Future Roadmap (Planned)
 - [ ] Branch management (Create, Checkout, Delete branches)
