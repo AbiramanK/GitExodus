@@ -83,6 +83,7 @@ function App() {
         </div>
         <div className="flex items-center gap-6 text-sm font-medium text-gray-300">
           <a href="#features" className="hover:text-white transition-colors">Features</a>
+          <a href="#docs" className="hover:text-white transition-colors">Documentation</a>
           <a href="https://github.com/AbiramanK/GitExodus" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
             <Github className="h-4 w-4" />
             GitHub
@@ -98,7 +99,7 @@ function App() {
           transition={{ duration: 0.6 }}
         >
           <Badge className="mb-6 px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20 text-sm font-medium inline-block">
-            v0.2.0 is now available
+            v0.3.0 is now available
           </Badge>
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white mb-6">
             Repo Management. <br />
@@ -136,9 +137,9 @@ function App() {
               >
                 <div className="flex items-center justify-center">
                 <img 
-                  src={screenshots[currentIndex].src} 
-                  alt={screenshots[currentIndex].alt}
-                  className="w-fit h-fit object-cover rounded-xl"
+                   src={screenshots[currentIndex].src} 
+                   alt={screenshots[currentIndex].alt}
+                   className="w-fit h-fit object-cover rounded-xl"
                 />
                 </div>
                 
@@ -205,67 +206,56 @@ function App() {
           </div>
         </div>
 
+        {/* Documentation Section */}
+        <DocumentationSection />
+
         {/* Release Notes */}
         <div className="mt-32 w-full text-left">
-          <h2 className="text-3xl font-bold text-white mb-12 text-center">v0.2.0 Release Notes</h2>
+          <h2 className="text-3xl font-bold text-white mb-12 text-center">v0.3.0 Release Notes</h2>
           <div className="grid md:grid-cols-2 gap-8">
             <div className="p-8 rounded-xl bg-[#161b22] border border-white/5">
               <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                 <Layout className="h-5 w-5 text-blue-400" />
-                Analytics & Dashboard
+                Granular Control
               </h3>
               <ul className="space-y-3 text-gray-400 text-sm">
                 <li className="flex gap-2">
                   <span className="text-blue-500">•</span>
-                  <span><strong>Analytics View:</strong> New primary dashboard with real-time stats and health charts.</span>
+                  <span><strong>Hunk Discard:</strong> Revert specific code segments within a file with industry-standard precision.</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-blue-500">•</span>
-                  <span><strong>Multi-root:</strong> Added support for multiple base paths in repository discovery.</span>
+                  <span><strong>Segmented Diff:</strong> New diff viewer design with inline discard actions and collapsible hunks.</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-blue-500">•</span>
-                  <span><strong>Exit Confirmation:</strong> Secure application closure via window "X" or sidebar buttons.</span>
+                  <span><strong>Back Navigation:</strong> Simplified header navigation with a dedicated "Back" button.</span>
                 </li>
               </ul>
             </div>
             <div className="p-8 rounded-xl bg-[#161b22] border border-white/5">
               <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                 <Monitor className="h-5 w-5 text-purple-400" />
-                Branding & Polish
+                Onboarding & Docs
               </h3>
               <ul className="space-y-3 text-gray-400 text-sm">
                 <li className="flex gap-2">
                   <span className="text-purple-500">•</span>
-                  <span><strong>Neon Logo:</strong> High-fidelity geometric bird identity with neon enhancements.</span>
+                  <span><strong>Interactive Docs:</strong> Comprehensive installation and developer guides directly on the landing page.</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-purple-500">•</span>
-                  <span><strong>High-DPI Favicon:</strong> Sharp and prominent icon for Retina and 4K displays.</span>
+                  <span><strong>Developer Onboarding:</strong> Detailed PR guidelines, branch naming, and project setup instructions.</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-purple-500">•</span>
-                  <span><strong>Menu Refit:</strong> Simplified sidebar with dedicated Theme and Exit controls.</span>
+                  <span><strong>Standardized Undo:</strong> Unified iconography across the app for all revert operations.</span>
                 </li>
               </ul>
             </div>
           </div>
         </div>
 
-        {/* Installation Instructions */}
-        <div className="mt-32 w-full max-w-3xl mx-auto text-left">
-            <h2 className="text-3xl font-bold text-white mb-8 text-center">Fast Installation</h2>
-            <div className="bg-[#161b22] p-8 rounded-xl border border-white/10">
-                <h3 className="text-lg font-medium text-white mb-4">Linux (Debian/Ubuntu)</h3>
-                <pre className="bg-black/50 p-4 rounded-md text-emerald-400 font-mono text-sm overflow-x-auto border border-white/5">
-                    <code>wget https://github.com/AbiramanK/GitExodus/releases/latest/download/gitexodus_0.2.0_amd64.deb
-sudo dpkg -i gitexodus_0.2.0_amd64.deb</code>
-                </pre>
-                
-                <h3 className="text-lg font-medium text-white mb-4 mt-8">Windows</h3>
-                <p className="text-gray-400 mb-2">Download the MSI installer from the <a href="https://github.com/AbiramanK/GitExodus/releases" className="text-blue-400 hover:underline">Releases page</a> and run it.</p>
-            </div>
-        </div>
       </main>
 
       {/* Footer */}
@@ -274,6 +264,157 @@ sudo dpkg -i gitexodus_0.2.0_amd64.deb</code>
       </footer>
     </div>
   );
+}
+
+function DocumentationSection() {
+    const [activeTab, setActiveTab] = useState<'user' | 'developer'>('user');
+
+    return (
+        <div id="docs" className="mt-32 w-full max-w-4xl mx-auto text-left">
+            <h2 className="text-3xl font-bold text-white mb-8 text-center">Documentation</h2>
+            
+            <div className="flex items-center justify-center p-1 bg-white/5 rounded-lg border border-white/10 w-fit mx-auto mb-10">
+                <button 
+                  onClick={() => setActiveTab('user')}
+                  className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'user' ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                >
+                    User Guide
+                </button>
+                <button 
+                  onClick={() => setActiveTab('developer')}
+                  className={`px-6 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'developer' ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                >
+                    Developer Guide
+                </button>
+            </div>
+
+            <AnimatePresence mode="wait">
+                {activeTab === 'user' ? (
+                    <motion.div 
+                        key="user"
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-10"
+                    >
+                        <div className="bg-[#161b22] p-8 rounded-xl border border-white/10">
+                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                <Monitor className="h-5 w-5 text-blue-400" />
+                                Installation
+                            </h3>
+                            
+                            <div className="space-y-8">
+                                    <div>
+                                        <h4 className="text-md font-medium text-gray-200 mb-3 ml-1">Linux (Debian/Ubuntu)</h4>
+                                        <pre className="bg-black/50 p-4 rounded-md text-emerald-400 font-mono text-sm overflow-x-auto border border-white/5">
+                                            <code>wget https://github.com/AbiramanK/GitExodus/releases/latest/download/gitexodus_0.3.0_amd64.deb
+sudo dpkg -i gitexodus_0.3.0_amd64.deb</code>
+                                        </pre>
+                                    </div>
+                                
+                                <div className="grid sm:grid-cols-2 gap-6">
+                                    <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                                        <h4 className="text-md font-medium text-gray-200 mb-2">Windows</h4>
+                                        <p className="text-sm text-gray-400 leading-relaxed">
+                                            Download the <code>.msi</code> installer from the <a href="https://github.com/AbiramanK/GitExodus/releases" className="text-blue-400 hover:underline">Releases</a> page and follow the setup wizard.
+                                        </p>
+                                    </div>
+                                    <div className="p-4 rounded-lg bg-white/5 border border-white/10">
+                                        <h4 className="text-md font-medium text-gray-200 mb-2">macOS</h4>
+                                        <p className="text-sm text-gray-400 leading-relaxed">
+                                            Grab the <code>.dmg</code> file from GitHub, open it, and drag <strong>GitExodus</strong> to your Applications folder.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <div className="p-6 rounded-xl border border-white/5 bg-[#161b22]/50">
+                                <h3 className="text-lg font-semibold text-white mb-3">System Requirements</h3>
+                                <ul className="space-y-2 text-sm text-gray-400">
+                                    <li className="flex gap-2"><span>•</span> 64-bit multi-core processor</li>
+                                    <li className="flex gap-2"><span>•</span> 4GB RAM (8GB recommended)</li>
+                                    <li className="flex gap-2"><span>•</span> Git installed on system PATH</li>
+                                </ul>
+                            </div>
+                            <div className="p-6 rounded-xl border border-white/5 bg-[#161b22]/50">
+                                <h3 className="text-lg font-semibold text-white mb-3">Post-Install Tip</h3>
+                                <p className="text-sm text-gray-400 leading-relaxed">
+                                    After launching, go to <strong>Settings</strong> to add your base repository folders. GitExodus will then index and track them automatically.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <motion.div 
+                        key="developer"
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-10"
+                    >
+                        <div className="bg-[#161b22] p-8 rounded-xl border border-white/10">
+                            <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                                <Code2 className="h-5 w-5 text-emerald-400" />
+                                Project Setup
+                            </h3>
+                            
+                            <div className="space-y-6">
+                                <p className="text-sm text-gray-400">
+                                    Ensure you have <strong>Node.js 18+</strong> and <strong>Rust</strong> (latest stable) installed before proceeding.
+                                </p>
+                                
+                                <div>
+                                    <h4 className="text-md font-medium text-gray-200 mb-3 ml-1">1. Clone & Install</h4>
+                                    <pre className="bg-black/50 p-4 rounded-md text-emerald-400 font-mono text-sm overflow-x-auto border border-white/5">
+                                        <code>git clone https://github.com/AbiramanK/GitExodus.git
+cd GitExodus
+npm install</code>
+                                    </pre>
+                                </div>
+
+                                <div>
+                                    <h4 className="text-md font-medium text-gray-200 mb-3 ml-1">2. Run Dev Server</h4>
+                                    <pre className="bg-black/50 p-4 rounded-md text-emerald-400 font-mono text-sm overflow-x-auto border border-white/5">
+                                        <code>npm run tauri dev</code>
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-[#161b22] p-8 rounded-xl border border-white/10">
+                            <h3 className="text-xl font-bold text-white mb-6">Contribution Guidelines (PRs)</h3>
+                            <div className="grid sm:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <h4 className="text-md font-medium text-gray-200">Branch Naming</h4>
+                                    <ul className="space-y-2 text-sm text-gray-400 font-mono">
+                                        <li>feat/short-desc</li>
+                                        <li>fix/issue-desc</li>
+                                        <li>refactor/target</li>
+                                    </ul>
+                                </div>
+                                <div className="space-y-4">
+                                    <h4 className="text-md font-medium text-gray-200">Commit Standards</h4>
+                                    <p className="text-sm text-gray-400 leading-relaxed">
+                                        We use <strong>Conventional Commits</strong>. Examples:<br/>
+                                        <code>feat: add hunk support</code><br/>
+                                        <code>fix: sidebar layout bugs</code>
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-8 pt-8 border-t border-white/5 text-sm text-gray-400">
+                                <p><strong>REQUIRED for PR approval:</strong> Ensure <code>cargo fmt</code> has been run and there are no TypeScript lint errors. All tests should pass (<code>npm test</code>).</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
 }
 
 function Badge({ children, className }: { children: React.ReactNode, className?: string }) {

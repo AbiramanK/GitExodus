@@ -1,5 +1,4 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../redux/store';
+import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { 
   BarChart3, 
@@ -12,46 +11,19 @@ import {
   LayoutDashboard,
   RotateCcw
 } from 'lucide-react';
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
-import { startScan, addRepo, finishScan, setScanError } from '../redux/slices/repoSlice';
-import { useEffect } from 'react';
+import { useScan } from '../hooks/useScan';
 import { cn } from '../lib/utils';
 import { setCurrentPage } from '../redux/slices/uiSlice';
 import { PAGE_ROUTES } from '../configs/pageRoutes';
 
 export const Dashboard = () => {
   const dispatch = useDispatch();
-  const { repositories, isScanning, scanRoots } = useSelector((state: RootState) => state.repos);
+  const { repositories, isScanning, handleScan } = useScan(true);
+  
   const totalRepos = repositories.length;
   const dirtyRepos = repositories.filter(r => r.is_dirty).length;
   const unpushedRepos = repositories.filter(r => r.has_unpushed_commits).length;
   const cleanRepos = totalRepos - (dirtyRepos + unpushedRepos);
-
-  const handleScan = async () => {
-    dispatch(startScan());
-    try { 
-      let rootsList = scanRoots;
-      if (rootsList.length === 0) {
-        // We don't have easy access to homeDir() here without more imports, 
-        // but the backend handles empty roots by default in some cases 
-        // or we can just pass the scanRoots which should be initialized.
-      }
-      await invoke('scan_repos', { rootPaths: rootsList }); 
-    }
-    catch (error) { dispatch(setScanError(error as string)); }
-  };
-
-  useEffect(() => {
-    const setup = async () => {
-      const u1 = await listen('scan-started', () => dispatch(startScan()));
-      const u2 = await listen('repo-detected', (e: any) => dispatch(addRepo(e.payload)));
-      const u3 = await listen('scan-finished', () => dispatch(finishScan()));
-      return () => { u1(); u2(); u3(); };
-    };
-    const p = setup();
-    return () => { p.then(u => u()); };
-  }, [dispatch]);
 
   const stats = [
     { label: 'Total Repositories', value: totalRepos, icon: LayoutDashboard, color: 'text-blue-500', bg: 'bg-blue-500/10' },

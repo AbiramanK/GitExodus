@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - "v*"
 
 jobs:
   check-version:
@@ -61,6 +59,22 @@ jobs:
 
       - name: install frontend dependencies
         run: npm install
+
+      - name: Extract Release Notes
+        id: extract_notes
+        shell: bash
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          if [[ "$VERSION" == "$GITHUB_REF" ]]; then
+            VERSION=$(grep '"version":' package.json | head -n 1 | awk -F '"' '{print $4}')
+          fi
+          echo "Extracting notes for version $VERSION"
+          NOTES=$( (cat RELEASES.md; echo -e "\n## [END]") | sed -n "/## \[$VERSION\]/,/## \[/p" | sed '1d' | sed '$d')
+          
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "body<<$EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT
 
       - uses: tauri-apps/tauri-action@v0
         env:

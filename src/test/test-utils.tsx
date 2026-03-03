@@ -38,7 +38,7 @@ export function renderWithProviders(
   function Wrapper({ children }: PropsWithChildren<{}>): React.ReactElement {
     return (
       <Provider store={store as any}>
-        <ThemeProvider>
+        <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           {children}
         </ThemeProvider>
       </Provider>

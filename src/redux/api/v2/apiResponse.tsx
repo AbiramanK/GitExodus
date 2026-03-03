@@ -13,9 +13,19 @@ export interface GitChange {
     status: string;
 }
 
+export interface Hunk {
+    header: string;
+    patch: string;
+    old_start: number;
+    old_lines: number;
+    new_start: number;
+    new_lines: number;
+}
+
 export interface FileDiff {
     original_content: string;
     modified_content: string;
+    hunks: Hunk[];
 }
 
 export interface BulkRepoResult {

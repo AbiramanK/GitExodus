@@ -12,6 +12,7 @@ import { GitChange, FileDiff, BulkResult } from './apiResponse';
 export const gitApi = createApi({
   reducerPath: 'gitApi',
   baseQuery: (arg: any) => ({ data: arg }),
+  tagTypes: ['RepoChanges', 'RepoList'],
   endpoints: (builder) => ({
     commitRepo: builder.mutation<void, { path: string; message: string }>({
       queryFn: async ({ path, message }) => {
@@ -22,6 +23,7 @@ export const gitApi = createApi({
           return { error: error as string };
         }
       },
+      invalidatesTags: ['RepoList'],
     }),
     pushRepo: builder.mutation<void, string>({
       queryFn: async (path) => {
@@ -32,6 +34,7 @@ export const gitApi = createApi({
           return { error: error as string };
         }
       },
+      invalidatesTags: ['RepoList'],
     }),
     deleteRepo: builder.mutation<void, string>({
       queryFn: async (path) => {
@@ -42,6 +45,7 @@ export const gitApi = createApi({
           return { error: error as string };
         }
       },
+      invalidatesTags: ['RepoList'],
     }),
     openFolder: builder.mutation<void, string>({
       queryFn: async (path) => {
@@ -82,6 +86,7 @@ export const gitApi = createApi({
           return { error: error as string };
         }
       },
+      providesTags: (_result, _error, path) => [{ type: 'RepoChanges', id: path }],
     }),
     getFileDiffContent: builder.query<FileDiff, { repoPath: string; filePath: string }>({
       queryFn: async ({ repoPath, filePath }) => {
@@ -102,6 +107,48 @@ export const gitApi = createApi({
           return { error: error as string };
         }
       },
+      invalidatesTags: ['RepoList'],
+    }),
+    discardFileChanges: builder.mutation<void, { repoPath: string; filePath: string }>({
+      queryFn: async ({ repoPath, filePath }) => {
+        try {
+          await invoke('discard_file_changes', { repoPath, filePath });
+          return { data: undefined };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+      invalidatesTags: (_result, _error, { repoPath }) => [
+        { type: 'RepoChanges', id: repoPath },
+        'RepoList'
+      ],
+    }),
+    discardAllChanges: builder.mutation<void, string>({
+      queryFn: async (repoPath) => {
+        try {
+          await invoke('discard_all_changes', { repoPath });
+          return { data: undefined };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+      invalidatesTags: (_result, _error, repoPath) => [
+        { type: 'RepoChanges', id: repoPath },
+        'RepoList'
+      ],
+    }),
+    discardHunk: builder.mutation<void, { repoPath: string; patch: string }>({
+      queryFn: async ({ repoPath, patch }) => {
+        try {
+          await invoke('discard_hunk', { repoPath, patch });
+          return { data: undefined };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+      invalidatesTags: (_result, _error, { repoPath }) => [
+        { type: 'RepoChanges', id: repoPath }
+      ],
     }),
   }),
 });
@@ -115,5 +162,8 @@ export const {
     useOpenWithMutation,
     useGetRepoChangesQuery,
     useGetFileDiffContentQuery,
-    useBulkCommitAndPushMutation
+    useBulkCommitAndPushMutation,
+    useDiscardFileChangesMutation,
+    useDiscardAllChangesMutation,
+    useDiscardHunkMutation
 } = gitApi;

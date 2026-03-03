@@ -1,7 +1,7 @@
 use crate::models::{AppInfo, GitChange, FileDiff, BulkRepoResult, BulkResult};
-use crate::git_logic::{analyze_repo, commit_all, push_repo, safe_delete, get_repo_changes as git_get_changes, get_file_diff_content as git_get_diff};
+use crate::git_logic::{self, analyze_repo, commit_all, push_repo, safe_delete, get_repo_changes as git_get_changes, get_file_diff_content as git_get_diff, discard_file_changes as git_discard_changes, discard_all_changes as git_discard_all};
 use crate::app_discovery::get_detected_apps;
-use std::path::PathBuf;
+use std::path::{PathBuf, Path};
 use std::process::Command;
 
 #[tauri::command]
@@ -166,4 +166,20 @@ pub async fn bulk_commit_and_push(paths: Vec<String>, message: String) -> Result
 #[tauri::command]
 pub fn exit_app(app_handle: tauri::AppHandle) {
     app_handle.exit(0);
+}
+
+#[tauri::command]
+pub async fn discard_file_changes(repo_path: String, file_path: String) -> Result<(), String> {
+    git_discard_changes(&PathBuf::from(repo_path), &file_path).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn discard_all_changes(repo_path: String) -> Result<(), String> {
+    git_discard_all(&PathBuf::from(repo_path)).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn discard_hunk(repo_path: String, patch: String) -> Result<(), String> {
+    git_logic::discard_hunk(Path::new(&repo_path), &patch)
+        .map_err(|e| e.to_string())
 }

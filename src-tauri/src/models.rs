@@ -27,9 +27,20 @@ pub struct GitChange {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Hunk {
+    pub header: String,
+    pub patch: String,
+    pub old_start: u32,
+    pub old_lines: u32,
+    pub new_start: u32,
+    pub new_lines: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FileDiff {
     pub original_content: String,
     pub modified_content: String,
+    pub hunks: Vec<Hunk>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

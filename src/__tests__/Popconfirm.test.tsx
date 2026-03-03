@@ -1,52 +1,56 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { Popconfirm } from '../components/ui/Popconfirm';
+import { renderWithProviders } from '../test/test-utils';
 
-describe('Popconfirm Component', () => {
-  it('renders trigger element', () => {
-    render(
-      <Popconfirm title="Delete?" onConfirm={() => {}}>
-        <button>Trigger</button>
+vi.mock('../components/ui/core', async () => {
+    const actual = await vi.importActual('../components/ui/core');
+    return {
+        ...actual,
+        Popover: ({ children }: any) => <div>{children}</div>,
+        PopoverTrigger: ({ children }: any) => <div>{children}</div>,
+        PopoverContent: ({ children }: any) => <div>{children}</div>,
+    };
+});
+
+describe('Popconfirm', () => {
+  it('renders children', () => {
+    renderWithProviders(
+      <Popconfirm title="Title" onConfirm={vi.fn()}>
+        <button>Click me</button>
       </Popconfirm>
     );
-    expect(screen.getByText('Trigger')).toBeInTheDocument();
+    expect(screen.getByText('Click me')).toBeInTheDocument();
   });
 
-  it('shows dialog when trigger is clicked', () => {
-    render(
-      <Popconfirm title="Are you sure?" onConfirm={() => {}}>
-        <button>Trigger</button>
-      </Popconfirm>
-    );
-    
-    fireEvent.click(screen.getByText('Trigger'));
-    expect(screen.getByText('Are you sure?')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /confirm/i })).toBeInTheDocument();
-  });
-
-  it('calls onConfirm when confirm button is clicked', () => {
+  it('shows popover content when clicked', async () => {
     const onConfirm = vi.fn();
-    render(
-      <Popconfirm title="Confirm?" onConfirm={onConfirm}>
-        <button>Trigger</button>
+    renderWithProviders(
+      <Popconfirm title="Confirm?" description="Sure?" onConfirm={onConfirm}>
+        <button>Delete</button>
       </Popconfirm>
     );
     
-    fireEvent.click(screen.getByText('Trigger'));
-    fireEvent.click(screen.getByRole('button', { name: /confirm/i }));
+    fireEvent.click(screen.getByText('Delete'));
     
-    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Confirm?')).toBeInTheDocument();
+    expect(screen.getByText('Sure?')).toBeInTheDocument();
+    
+    const confirmBtn = screen.getByRole('button', { name: /confirm/i });
+    fireEvent.click(confirmBtn);
+    expect(onConfirm).toHaveBeenCalled();
   });
 
-  it('closes dialog when cancel is clicked', () => {
-    render(
-      <Popconfirm title="Confirm?" onConfirm={() => {}}>
-        <button>Trigger</button>
+  it('closes when cancel is clicked', () => {
+    renderWithProviders(
+      <Popconfirm title="Confirm?" onConfirm={vi.fn()}>
+        <button>Delete</button>
       </Popconfirm>
     );
     
-    fireEvent.click(screen.getByText('Trigger'));
-    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    fireEvent.click(screen.getByText('Delete'));
+    const cancelBtn = screen.getByRole('button', { name: /cancel/i });
+    fireEvent.click(cancelBtn);
     
     expect(screen.queryByText('Confirm?')).not.toBeInTheDocument();
   });

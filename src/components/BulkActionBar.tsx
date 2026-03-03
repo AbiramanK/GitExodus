@@ -80,7 +80,7 @@ export const BulkActionBar = ({
                 <Button size="sm" variant="default" onClick={() => { setShowCommitInput(v => !v); }} className="gap-1.5 text-xs text-white">
                   <GitMerge className="h-3.5 w-3.5" /> Commit &amp; Push
                 </Button>
-                <Button size="icon" variant="ghost" onClick={onClearSelection} className="h-7 w-7 text-muted-foreground hover:text-foreground">
+                <Button size="icon" variant="ghost" onClick={onClearSelection} title="Clear Selection" className="h-7 w-7 text-muted-foreground hover:text-foreground">
                   <X className="h-4 w-4" />
                 </Button>
               </div>

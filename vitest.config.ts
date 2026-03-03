@@ -15,12 +15,17 @@ export default defineConfig({
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/main.tsx', 'src/test/**', 'src/api/v2/apiResponse.tsx'],
     },
+    server: {
+      deps: {
+        inline: [/react-diff-viewer-continued/, /@exodus\/bytes/],
+      },
+    },
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
       // Mock the diff viewer library to avoid ESM/CJS transpilation issues during tests
-      'react-diff-viewer-continued': path.resolve(__dirname, './src/test/__mocks__/react-diff-viewer-continued.js'),
+      'react-diff-viewer-continued': path.resolve(__dirname, './src/test/__mocks__/react-diff-viewer-continued.tsx'),
     },
   },
 });

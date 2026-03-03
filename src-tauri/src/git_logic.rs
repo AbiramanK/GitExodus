@@ -1,5 +1,5 @@
 use git2::{Repository, StatusOptions};
-use crate::models::{RepositoryInfo, GitChange, FileDiff};
+use crate::models::{RepositoryInfo, GitChange, FileDiff, Hunk};
 use std::path::Path;
 
 pub fn analyze_repo(path: &Path) -> Result<RepositoryInfo, Box<dyn std::error::Error>> {
@@ -175,8 +175,199 @@ pub fn get_file_diff_content(repo_path: &Path, file_path: &str) -> Result<FileDi
         "".to_string()
     };
 
+    let mut diff_options = git2::DiffOptions::new();
+    diff_options.pathspec(file_path);
+    
+    let diff = repo.diff_tree_to_workdir_with_index(
+        repo.head()?.peel_to_tree().ok().as_ref(),
+        Some(&mut diff_options)
+    )?;
+
+    let mut hunks = Vec::new();
+    diff.foreach(
+        &mut |_, _| true,
+        None,
+        Some(&mut |_, hunk| {
+            // We need the full patch for this hunk to be able to reverse apply it later.
+            // Since git2 doesn't easily give us the patch for a single hunk in string format,
+            // we'll use git command as a fallback for the patch content if needed, 
+            // but let's try to get it from git2 if possible.
+            // Actually, git apply -R < patch is safer.
+            hunks.push(Hunk {
+                header: String::from_utf8_lossy(hunk.header()).to_string(),
+                patch: "".to_string(), // We'll populate this in a second pass or via git command
+                old_start: hunk.old_start(),
+                old_lines: hunk.old_lines(),
+                new_start: hunk.new_start(),
+                new_lines: hunk.new_lines(),
+            });
+            true
+        }),
+        None,
+    )?;
+
+    // Second pass to get the actual patch strings for each hunk
+    // This is tricky with git2's callback architecture.
+    // Easier way: use git diff -U3 <file> and parse it or just get the whole file diff and split by hunk.
+    
+    let patch_output = std::process::Command::new("git")
+        .arg("diff")
+        .arg("-U3")
+        .arg("--")
+        .arg(file_path)
+        .current_dir(repo_path)
+        .output()?;
+    
+    let patch_str = String::from_utf8_lossy(&patch_output.stdout);
+    let mut hunk_patches = Vec::new();
+    
+    let lines: Vec<&str> = patch_str.split('\n').collect();
+    let mut current_patch = String::new();
+    let mut in_hunk = false;
+
+    // We need to construct a valid patch for EACH hunk.
+    // A valid patch includes the header (--- a/file, +++ b/file)
+    let header = format!("--- a/{file_path}\n+++ b/{file_path}\n");
+
+    for line in lines {
+        if line.starts_with("@@") {
+            if in_hunk {
+                hunk_patches.push(current_patch.clone());
+            }
+            current_patch = header.clone();
+            current_patch.push_str(line);
+            current_patch.push('\n');
+            in_hunk = true;
+        } else if in_hunk {
+            current_patch.push_str(line);
+            current_patch.push('\n');
+        }
+    }
+    if in_hunk {
+        hunk_patches.push(current_patch);
+    }
+
+    // Match identified hunks with their patches
+    for (i, hunk) in hunks.iter_mut().enumerate() {
+        if let Some(p) = hunk_patches.get(i) {
+            hunk.patch = p.clone();
+        }
+    }
+
     Ok(FileDiff {
         original_content,
         modified_content,
+        hunks,
     })
+}
+
+pub fn discard_file_changes(repo_path: &Path, file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    // 1. Unstage the file (git reset HEAD <file>)
+    let _ = std::process::Command::new("git")
+        .arg("reset")
+        .arg("HEAD")
+        .arg("--")
+        .arg(file_path)
+        .current_dir(repo_path)
+        .output();
+
+    // 2. Discard workdir changes (git checkout -- <file>)
+    let checkout_res = std::process::Command::new("git")
+        .arg("checkout")
+        .arg("--")
+        .arg(file_path)
+        .current_dir(repo_path)
+        .output();
+
+    // 3. If it failed, it might be an untracked (new) file
+    match checkout_res {
+        Ok(output) if !output.status.success() => {
+            // Check if it's a new file and delete if so
+            let repo = Repository::open(repo_path)?;
+            let status = repo.status_file(Path::new(file_path)).unwrap_or(git2::Status::empty());
+            
+            if status.contains(git2::Status::WT_NEW) || status.contains(git2::Status::INDEX_NEW) {
+                let full_path = repo_path.join(file_path);
+                if full_path.exists() {
+                    if full_path.is_dir() {
+                        std::fs::remove_dir_all(&full_path)?;
+                    } else {
+                        std::fs::remove_file(&full_path)?;
+                    }
+                }
+            }
+        },
+        Err(e) => return Err(format!("Failed to execute git checkout: {}", e).into()),
+        _ => {}
+    }
+
+    Ok(())
+}
+
+pub fn discard_all_changes(repo_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
+    // 1. Unstage everything
+    let _ = std::process::Command::new("git")
+        .arg("reset")
+        .arg("HEAD")
+        .arg("--")
+        .arg(".")
+        .current_dir(repo_path)
+        .output();
+
+    // 2. Discard modified/deleted files
+    let _ = std::process::Command::new("git")
+        .arg("checkout")
+        .arg("--")
+        .arg(".")
+        .current_dir(repo_path)
+        .output();
+
+    // 3. Remove untracked files and directories
+    let _ = std::process::Command::new("git")
+        .arg("clean")
+        .arg("-fd")
+        .current_dir(repo_path)
+        .output();
+
+    Ok(())
+}
+pub fn discard_hunk(repo_path: &Path, patch: &str) -> Result<(), Box<dyn std::error::Error>> {
+    use std::io::Write;
+    
+    let mut child = std::process::Command::new("git")
+        .arg("apply")
+        .arg("-R")
+        .arg("--cached") // Also apply to index if possible, though mostly we want workdir
+        .arg("-")
+        .stdin(std::process::Stdio::piped())
+        .current_dir(repo_path)
+        .spawn()?;
+
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin.write_all(patch.as_bytes())?;
+    }
+
+    let status = child.wait()?;
+    
+    // Also apply to workdir (we did --cached above, let's do workdir too for safety, 
+    // or just omit --cached if we want both. Actually, git apply -R - applies to both by default if not specified)
+    // Let's try without --cached first to revert workdir.
+    
+    if !status.success() {
+        // Fallback or retry without --cached if it failed
+         let mut child2 = std::process::Command::new("git")
+            .arg("apply")
+            .arg("-R")
+            .arg("-")
+            .stdin(std::process::Stdio::piped())
+            .current_dir(repo_path)
+            .spawn()?;
+
+        if let Some(mut stdin) = child2.stdin.take() {
+            stdin.write_all(patch.as_bytes())?;
+        }
+        child2.wait()?;
+    }
+
+    Ok(())
 }

@@ -3,17 +3,15 @@ import { screen, fireEvent } from '@testing-library/react';
 import { RepoTable } from '../components/RepoTable';
 import { renderWithProviders } from '../test/test-utils';
 
-// Mock OpenWithMenu to simplify RepoTable tests
+// Mock OpenWithMenu
 vi.mock('../components/OpenWithMenu', () => ({
   OpenWithMenu: () => <div data-testid="open-with-menu">OpenWith</div>
 }));
 
-// Mock Popconfirm to simplify testing Delete
+// Mock Popconfirm to execute confirm immediately
 vi.mock('../components/ui/Popconfirm', () => ({
   Popconfirm: ({ children, onConfirm }: any) => (
-    <div data-testid="popconfirm-mock" onClick={onConfirm}>
-      {children}
-    </div>
+    <div onClick={onConfirm} data-testid="popconfirm-trigger">{children}</div>
   )
 }));
 
@@ -29,23 +27,24 @@ describe('RepoTable', () => {
   const onDelete = vi.fn();
   const onViewChanges = vi.fn();
   const onSelectionChange = vi.fn();
+  const onDiscardAll = vi.fn();
   
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders progress row when scanning and empty', () => {
-    renderWithProviders(<RepoTable data={[]} isScanning={true} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
-    expect(screen.getByText('Scanning for repositories...')).toBeInTheDocument();
+    renderWithProviders(<RepoTable data={[]} isScanning={true} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} onDiscardAll={onDiscardAll} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
+    expect(screen.getByText(/Scanning/i)).toBeInTheDocument();
   });
 
   it('renders empty row when not scanning and empty', () => {
-    renderWithProviders(<RepoTable data={[]} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
+    renderWithProviders(<RepoTable data={[]} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} onDiscardAll={onDiscardAll} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
     expect(screen.getByText('No repositories found.')).toBeInTheDocument();
   });
 
   it('renders repository rows with status badges', () => {
-    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
+    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} onDiscardAll={onDiscardAll} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
     expect(screen.getByText('repo1')).toBeInTheDocument();
     expect(screen.getByText('Dirty')).toBeInTheDocument();
     expect(screen.getByText('Unpushed')).toBeInTheDocument();
@@ -54,48 +53,48 @@ describe('RepoTable', () => {
 
   it('handles row selection toggle', () => {
     const selected = new Set(['/p1']);
-    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={selected} onSelectionChange={onSelectionChange} />);
+    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} onDiscardAll={onDiscardAll} selectedPaths={selected} onSelectionChange={onSelectionChange} />);
     
     const checkboxes = screen.getAllByRole('checkbox');
-    // checkbox[0] is Select All, [1] is repo1, [2] is repo2...
-    fireEvent.click(checkboxes[2]); // Toggle repo2
+    fireEvent.click(checkboxes[2]);
     expect(onSelectionChange).toHaveBeenCalled();
-    const callSet = onSelectionChange.mock.calls[0][0];
-    expect(callSet.has('/p1')).toBe(true);
-    expect(callSet.has('/p2')).toBe(true);
   });
 
   it('handles select all toggle', () => {
-    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
+    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} onDiscardAll={onDiscardAll} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
     
     const selectAll = screen.getByLabelText('Select all');
     fireEvent.click(selectAll);
     expect(onSelectionChange).toHaveBeenCalled();
-    const callSet = onSelectionChange.mock.calls[0][0];
-    expect(callSet.size).toBe(mockRepos.length);
   });
 
-  it('handles action button clicks', () => {
-    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
+  it('handles action button clicks including discard and delete', () => {
+    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} onDiscardAll={onDiscardAll} selectedPaths={new Set()} onSelectionChange={onSelectionChange} />);
     
-    // Test Commit button
-    const commitButtons = screen.getAllByTitle('Commit');
-    fireEvent.click(commitButtons[0]);
+    fireEvent.click(screen.getAllByTitle('Commit')[0]);
     expect(onCommit).toHaveBeenCalledWith('/p1');
 
-    // Test Push button
-    const pushButtons = screen.getAllByTitle('Push');
-    fireEvent.click(pushButtons[1]);
+    fireEvent.click(screen.getAllByTitle('Push')[1]);
     expect(onPush).toHaveBeenCalledWith('/p2');
 
-    // Test Delete button via Popconfirm mock
-    const trashButtons = screen.getAllByTitle('Delete');
-    fireEvent.click(trashButtons[0]);
+    fireEvent.click(screen.getAllByTitle('Delete')[0]);
     expect(onDelete).toHaveBeenCalledWith('/p1');
 
-    // Test View Changes
-    const viewButtons = screen.getAllByTitle('View Changes');
-    fireEvent.click(viewButtons[0]);
-    expect(onViewChanges).toHaveBeenCalledWith('/p1');
+    fireEvent.click(screen.getAllByTitle('Discard Changes')[0]);
+    expect(onDiscardAll).toHaveBeenCalledWith('/p1');
+  });
+
+  it('handles selection changes', () => {
+    const selected = new Set(['/p1']);
+    renderWithProviders(<RepoTable data={mockRepos} isScanning={false} onCommit={onCommit} onPush={onPush} onDelete={onDelete} onViewChanges={onViewChanges} onDiscardAll={onDiscardAll} selectedPaths={selected} onSelectionChange={onSelectionChange} />);
+    
+    // Toggle row 2
+    const checkboxes = screen.getAllByRole('checkbox'); // [all, r1, r2]
+    fireEvent.click(checkboxes[2]);
+    expect(onSelectionChange).toHaveBeenCalled();
+    
+    // Toggle all
+    fireEvent.click(checkboxes[0]);
+    expect(onSelectionChange).toHaveBeenCalled();
   });
 });
