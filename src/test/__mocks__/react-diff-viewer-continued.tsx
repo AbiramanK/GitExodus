@@ -1,6 +1,4 @@
-import React from 'react';
-
-export default function ReactDiffViewer(props) {
+export default function ReactDiffViewer(props: any) {
   return (
     <div data-testid="diff-viewer">
       {props.renderHunkHeader && props.renderHunkHeader({

@@ -7,7 +7,7 @@ vi.mock('../components/ui/core', async () => {
     const actual = await vi.importActual('../components/ui/core');
     return {
         ...actual,
-        Popover: ({ children, open }: any) => <div>{children}</div>,
+        Popover: ({ children }: any) => <div>{children}</div>,
         PopoverTrigger: ({ children }: any) => <div>{children}</div>,
         PopoverContent: ({ children }: any) => <div>{children}</div>,
     };

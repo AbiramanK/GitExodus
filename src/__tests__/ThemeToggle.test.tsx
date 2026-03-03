@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { renderWithProviders } from '../test/test-utils';

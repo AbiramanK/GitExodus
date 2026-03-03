@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
-import { gitApi } from '../redux/api/v2/gitApi';
+import { screen, fireEvent } from '@testing-library/react';
 import { DiffViewerDialog } from '../components/DiffViewerDialog';
 import { renderWithProviders } from '../test/test-utils';
 import { invoke } from '@tauri-apps/api/core';

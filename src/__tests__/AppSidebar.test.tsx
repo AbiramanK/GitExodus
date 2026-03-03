@@ -2,7 +2,6 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { AppSidebar } from '../components/AppSidebar';
 import { renderWithProviders } from '../test/test-utils';
-import { setCurrentPage } from '../redux/slices/uiSlice';
 
 // Mock pageRoutes
 vi.mock('../configs/pageRoutes', () => ({
