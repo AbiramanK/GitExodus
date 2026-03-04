@@ -18,7 +18,7 @@ describe('Repositories Page', () => {
     it('toggles view mode buttons', () => {
         renderWithProviders(<Repositories />);
         const listBtn = screen.getByTitle('List View');
-        const treeBtn = screen.getByTitle('Tree View');
+        const treeBtn = screen.getByTitle('Grouped View');
         
         fireEvent.click(treeBtn);
         fireEvent.click(listBtn);

@@ -2,7 +2,8 @@
 import { 
     Badge, Button, Card, CardHeader, CardTitle, CardContent
 } from "./ui/core";
-import { GitCommit, ArrowUpCircle, Trash2, Eye, Folder, ChevronDown, ChevronRight, Undo } from "lucide-react";
+import { GitCommit, ArrowUpCircle, Trash2, Eye, Folder, ChevronDown, ChevronRight, Undo, History } from "lucide-react";
+import { GitLogDialog } from "./GitLogDialog";
 import { OpenWithMenu } from "./OpenWithMenu";
 import { Popconfirm } from "./ui/Popconfirm";
 import { useState } from "react";
@@ -26,6 +27,7 @@ export const RepoTreeView = ({
   selectedPaths, onSelectionChange
 }: RepoTreeViewProps) => {
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [logRepo, setLogRepo] = useState<{ path: string; name: string } | null>(null);
 
   const toggleGroup = (folderName: string) => {
     const next = new Set(collapsedGroups);
@@ -184,6 +186,9 @@ export const RepoTreeView = ({
                             <Button size="icon" variant="ghost" onClick={() => onPush(repo.path)} disabled={!repo.has_unpushed_commits} className="h-8 w-8 text-muted-foreground hover:text-primary" title="Push">
                                 <ArrowUpCircle className="h-3.5 w-3.5" />
                             </Button>
+                            <Button size="icon" variant="ghost" onClick={() => setLogRepo({ path: repo.path, name: repo.name })} className="h-8 w-8 text-muted-foreground hover:text-primary" title="Commit History">
+                                <History className="h-3.5 w-3.5" />
+                            </Button>
                             <Button size="icon" variant="ghost" onClick={() => onCommit(repo.path)} disabled={!repo.is_dirty} className="h-8 w-8 text-muted-foreground hover:text-primary" title="Commit">
                                 <GitCommit className="h-3.5 w-3.5" />
                             </Button>
@@ -197,6 +202,14 @@ export const RepoTreeView = ({
           </Card>
         );
       })}
+
+      {logRepo && (
+          <GitLogDialog 
+              repoPath={logRepo.path} 
+              repoName={logRepo.name} 
+              onClose={() => setLogRepo(null)} 
+          />
+      )}
     </div>
   );
 };

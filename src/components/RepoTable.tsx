@@ -3,7 +3,9 @@ import {
     Table, TableHeader, TableBody, TableRow, TableHead, TableCell, 
     Badge, Button 
 } from "./ui/core";
-import { GitCommit, ArrowUpCircle, Trash2, Eye, Undo } from "lucide-react";
+import { GitCommit, ArrowUpCircle, Trash2, Eye, Undo, History } from "lucide-react";
+import { useState } from "react";
+import { GitLogDialog } from "./GitLogDialog";
 import { OpenWithMenu } from "./OpenWithMenu";
 import { Popconfirm } from "./ui/Popconfirm";
 
@@ -23,6 +25,7 @@ export const RepoTable = ({
   data, isScanning, onCommit, onPush, onDelete, onViewChanges, onDiscardAll,
   selectedPaths, onSelectionChange
 }: RepoTableProps) => {
+  const [logRepo, setLogRepo] = useState<{ path: string; name: string } | null>(null);
   const allSelected = data.length > 0 && data.every(r => selectedPaths.has(r.path));
   const someSelected = data.some(r => selectedPaths.has(r.path));
 
@@ -127,6 +130,9 @@ export const RepoTable = ({
                     <Button size="icon" variant="ghost" onClick={() => onPush(repo.path)} disabled={!repo.has_unpushed_commits} className="text-muted-foreground hover:text-primary" title="Push">
                         <ArrowUpCircle className="h-4 w-4" />
                     </Button>
+                    <Button size="icon" variant="ghost" onClick={() => setLogRepo({ path: repo.path, name: repo.name })} className="text-muted-foreground hover:text-primary" title="Commit History">
+                        <History className="h-4 w-4" />
+                    </Button>
                     <Button size="icon" variant="ghost" onClick={() => onCommit(repo.path)} disabled={!repo.is_dirty} className="text-muted-foreground hover:text-primary" title="Commit">
                         <GitCommit className="h-4 w-4" />
                     </Button>
@@ -136,6 +142,14 @@ export const RepoTable = ({
             ))}
           </TableBody>
         </Table>
+
+        {logRepo && (
+            <GitLogDialog 
+                repoPath={logRepo.path} 
+                repoName={logRepo.name} 
+                onClose={() => setLogRepo(null)} 
+            />
+        )}
       </div>
   );
 };

@@ -13,19 +13,20 @@ import { Search, RotateCcw, Rocket, GitMerge, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { RepoTable } from '../components/RepoTable';
 import { RepoTreeView } from '../components/RepoTreeView';
-import { groupRepositoriesByFolder } from '../lib/repoUtils';
+import { ExplorerTreeView } from '../components/ExplorerTreeView';
+import { groupRepositoriesByFolder, buildExplorerTree } from '../lib/repoUtils';
 import { CommitDialog } from '../components/CommitDialog';
 import { DiffViewerDialog } from '../components/DiffViewerDialog';
 import { BulkActionBar } from '../components/BulkActionBar';
 import { Popconfirm } from '../components/ui/Popconfirm';
 import { BulkResult } from '../redux/api/v2/apiResponse';
-import { LayoutList, LayoutGrid } from 'lucide-react';
+import { LayoutList, LayoutGrid, Folders } from 'lucide-react';
 
 const UNIVERSAL_COMMIT_MSG = 'chore: bulk sync via GitExodus';
 
 export const Repositories = () => {
   const { repositories, isScanning, handleScan } = useScan(true);
-  const [viewMode, setViewMode] = useState<'list' | 'tree'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'tree' | 'explorer'>('list');
   
   const [commitRepo] = useCommitRepoMutation();
   const [pushRepo] = usePushRepoMutation();
@@ -114,9 +115,18 @@ export const Repositories = () => {
                 size="icon" 
                 className="h-8 w-8"
                 onClick={() => setViewMode('tree')}
-                title="Tree View"
+                title="Grouped View"
             >
                 <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button 
+                variant={viewMode === 'explorer' ? 'secondary' : 'ghost'} 
+                size="icon" 
+                className="h-8 w-8"
+                onClick={() => setViewMode('explorer')}
+                title="Explorer View"
+            >
+                <Folders className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -169,9 +179,21 @@ export const Repositories = () => {
                 selectedPaths={selectedPaths}
                 onSelectionChange={setSelectedPaths}
             />
-        ) : (
+        ) : viewMode === 'tree' ? (
             <RepoTreeView 
                 groups={groupRepositoriesByFolder(filteredData)}
+                isScanning={isScanning}
+                onCommit={handleCommit}
+                onPush={handlePush}
+                onDelete={handleDelete}
+                onViewChanges={handleViewChanges}
+                onDiscardAll={handleDiscardAll}
+                selectedPaths={selectedPaths}
+                onSelectionChange={setSelectedPaths}
+            />
+        ) : (
+            <ExplorerTreeView 
+                rootNode={buildExplorerTree(filteredData)}
                 isScanning={isScanning}
                 onCommit={handleCommit}
                 onPush={handlePush}
