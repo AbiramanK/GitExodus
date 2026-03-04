@@ -7,7 +7,7 @@ export interface AppInfo {
   category: string;
 }
 
-import { GitChange, FileDiff, BulkResult } from './apiResponse';
+import { GitChange, FileDiff, BulkResult, GitCommitInfo, BranchInfo } from './apiResponse';
 
 export const gitApi = createApi({
   reducerPath: 'gitApi',
@@ -150,6 +150,26 @@ export const gitApi = createApi({
         { type: 'RepoChanges', id: repoPath }
       ],
     }),
+    getRepoLog: builder.query<GitCommitInfo[], string>({
+      queryFn: async (path) => {
+        try {
+          const result = await invoke<GitCommitInfo[]>('get_repo_log', { path });
+          return { data: result };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+    }),
+    getRepoBranches: builder.query<BranchInfo[], string>({
+      queryFn: async (path) => {
+        try {
+          const result = await invoke<BranchInfo[]>('get_repo_branches', { path });
+          return { data: result };
+        } catch (error) {
+          return { error: error as string };
+        }
+      },
+    }),
   }),
 });
 
@@ -165,5 +185,7 @@ export const {
     useBulkCommitAndPushMutation,
     useDiscardFileChangesMutation,
     useDiscardAllChangesMutation,
-    useDiscardHunkMutation
+    useDiscardHunkMutation,
+    useGetRepoLogQuery,
+    useGetRepoBranchesQuery
 } = gitApi;

@@ -1,4 +1,4 @@
-use crate::models::{AppInfo, GitChange, FileDiff, BulkRepoResult, BulkResult};
+use crate::models::{AppInfo, GitChange, FileDiff, BulkRepoResult, BulkResult, GitCommitInfo, BranchInfo};
 use crate::git_logic::{self, analyze_repo, commit_all, push_repo, safe_delete, get_repo_changes as git_get_changes, get_file_diff_content as git_get_diff, discard_file_changes as git_discard_changes, discard_all_changes as git_discard_all};
 use crate::app_discovery::get_detected_apps;
 use std::path::{PathBuf, Path};
@@ -28,7 +28,7 @@ pub async fn scan_repos(root_paths: Vec<String>, app: tauri::AppHandle) -> Resul
                                  return true; 
                             }
                             if name == "node_modules" || name == ".cache" || name == "target" {
-                                return false;
+                                 return false;
                             }
                         }
                     }
@@ -182,4 +182,14 @@ pub async fn discard_all_changes(repo_path: String) -> Result<(), String> {
 pub async fn discard_hunk(repo_path: String, patch: String) -> Result<(), String> {
     git_logic::discard_hunk(Path::new(&repo_path), &patch)
         .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_repo_log(path: String) -> Result<Vec<GitCommitInfo>, String> {
+    git_logic::get_repo_log(Path::new(&path)).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn get_repo_branches(path: String) -> Result<Vec<BranchInfo>, String> {
+    git_logic::get_branches(Path::new(&path)).map_err(|e| e.to_string())
 }

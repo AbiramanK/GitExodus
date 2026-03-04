@@ -1,5 +1,5 @@
 use git2::{Repository, StatusOptions};
-use crate::models::{RepositoryInfo, GitChange, FileDiff, Hunk};
+use crate::models::{RepositoryInfo, GitChange, FileDiff, Hunk, GitCommitInfo};
 use std::path::Path;
 
 pub fn analyze_repo(path: &Path) -> Result<RepositoryInfo, Box<dyn std::error::Error>> {
@@ -188,14 +188,9 @@ pub fn get_file_diff_content(repo_path: &Path, file_path: &str) -> Result<FileDi
         &mut |_, _| true,
         None,
         Some(&mut |_, hunk| {
-            // We need the full patch for this hunk to be able to reverse apply it later.
-            // Since git2 doesn't easily give us the patch for a single hunk in string format,
-            // we'll use git command as a fallback for the patch content if needed, 
-            // but let's try to get it from git2 if possible.
-            // Actually, git apply -R < patch is safer.
             hunks.push(Hunk {
                 header: String::from_utf8_lossy(hunk.header()).to_string(),
-                patch: "".to_string(), // We'll populate this in a second pass or via git command
+                patch: "".to_string(),
                 old_start: hunk.old_start(),
                 old_lines: hunk.old_lines(),
                 new_start: hunk.new_start(),
@@ -206,10 +201,6 @@ pub fn get_file_diff_content(repo_path: &Path, file_path: &str) -> Result<FileDi
         None,
     )?;
 
-    // Second pass to get the actual patch strings for each hunk
-    // This is tricky with git2's callback architecture.
-    // Easier way: use git diff -U3 <file> and parse it or just get the whole file diff and split by hunk.
-    
     let patch_output = std::process::Command::new("git")
         .arg("diff")
         .arg("-U3")
@@ -225,8 +216,6 @@ pub fn get_file_diff_content(repo_path: &Path, file_path: &str) -> Result<FileDi
     let mut current_patch = String::new();
     let mut in_hunk = false;
 
-    // We need to construct a valid patch for EACH hunk.
-    // A valid patch includes the header (--- a/file, +++ b/file)
     let header = format!("--- a/{file_path}\n+++ b/{file_path}\n");
 
     for line in lines {
@@ -247,7 +236,6 @@ pub fn get_file_diff_content(repo_path: &Path, file_path: &str) -> Result<FileDi
         hunk_patches.push(current_patch);
     }
 
-    // Match identified hunks with their patches
     for (i, hunk) in hunks.iter_mut().enumerate() {
         if let Some(p) = hunk_patches.get(i) {
             hunk.patch = p.clone();
@@ -262,7 +250,6 @@ pub fn get_file_diff_content(repo_path: &Path, file_path: &str) -> Result<FileDi
 }
 
 pub fn discard_file_changes(repo_path: &Path, file_path: &str) -> Result<(), Box<dyn std::error::Error>> {
-    // 1. Unstage the file (git reset HEAD <file>)
     let _ = std::process::Command::new("git")
         .arg("reset")
         .arg("HEAD")
@@ -271,7 +258,6 @@ pub fn discard_file_changes(repo_path: &Path, file_path: &str) -> Result<(), Box
         .current_dir(repo_path)
         .output();
 
-    // 2. Discard workdir changes (git checkout -- <file>)
     let checkout_res = std::process::Command::new("git")
         .arg("checkout")
         .arg("--")
@@ -279,10 +265,8 @@ pub fn discard_file_changes(repo_path: &Path, file_path: &str) -> Result<(), Box
         .current_dir(repo_path)
         .output();
 
-    // 3. If it failed, it might be an untracked (new) file
     match checkout_res {
         Ok(output) if !output.status.success() => {
-            // Check if it's a new file and delete if so
             let repo = Repository::open(repo_path)?;
             let status = repo.status_file(Path::new(file_path)).unwrap_or(git2::Status::empty());
             
@@ -305,7 +289,6 @@ pub fn discard_file_changes(repo_path: &Path, file_path: &str) -> Result<(), Box
 }
 
 pub fn discard_all_changes(repo_path: &Path) -> Result<(), Box<dyn std::error::Error>> {
-    // 1. Unstage everything
     let _ = std::process::Command::new("git")
         .arg("reset")
         .arg("HEAD")
@@ -314,7 +297,6 @@ pub fn discard_all_changes(repo_path: &Path) -> Result<(), Box<dyn std::error::E
         .current_dir(repo_path)
         .output();
 
-    // 2. Discard modified/deleted files
     let _ = std::process::Command::new("git")
         .arg("checkout")
         .arg("--")
@@ -322,7 +304,6 @@ pub fn discard_all_changes(repo_path: &Path) -> Result<(), Box<dyn std::error::E
         .current_dir(repo_path)
         .output();
 
-    // 3. Remove untracked files and directories
     let _ = std::process::Command::new("git")
         .arg("clean")
         .arg("-fd")
@@ -331,13 +312,14 @@ pub fn discard_all_changes(repo_path: &Path) -> Result<(), Box<dyn std::error::E
 
     Ok(())
 }
+
 pub fn discard_hunk(repo_path: &Path, patch: &str) -> Result<(), Box<dyn std::error::Error>> {
     use std::io::Write;
     
     let mut child = std::process::Command::new("git")
         .arg("apply")
         .arg("-R")
-        .arg("--cached") // Also apply to index if possible, though mostly we want workdir
+        .arg("--cached")
         .arg("-")
         .stdin(std::process::Stdio::piped())
         .current_dir(repo_path)
@@ -349,12 +331,7 @@ pub fn discard_hunk(repo_path: &Path, patch: &str) -> Result<(), Box<dyn std::er
 
     let status = child.wait()?;
     
-    // Also apply to workdir (we did --cached above, let's do workdir too for safety, 
-    // or just omit --cached if we want both. Actually, git apply -R - applies to both by default if not specified)
-    // Let's try without --cached first to revert workdir.
-    
     if !status.success() {
-        // Fallback or retry without --cached if it failed
          let mut child2 = std::process::Command::new("git")
             .arg("apply")
             .arg("-R")
@@ -370,4 +347,115 @@ pub fn discard_hunk(repo_path: &Path, patch: &str) -> Result<(), Box<dyn std::er
     }
 
     Ok(())
+}
+
+pub fn get_repo_log(path: &Path) -> Result<Vec<GitCommitInfo>, Box<dyn std::error::Error>> {
+    let repo = Repository::open(path)?;
+    
+    // 1. Get all branches and their OIDs
+    let mut branch_map: std::collections::HashMap<git2::Oid, Vec<String>> = std::collections::HashMap::new();
+    
+    // Local branches
+    if let Ok(branches) = repo.branches(Some(git2::BranchType::Local)) {
+        for branch_res in branches {
+            if let Ok((branch, _)) = branch_res {
+                if let Ok(Some(name)) = branch.name() {
+                    let reference = branch.get();
+                    if let Some(target) = reference.target() {
+                        branch_map.entry(target).or_default().push(name.to_string());
+                    }
+                }
+            }
+        }
+    }
+    
+    // Remote branches
+    if let Ok(branches) = repo.branches(Some(git2::BranchType::Remote)) {
+        for branch_res in branches {
+            if let Ok((branch, _)) = branch_res {
+                if let Ok(Some(name)) = branch.name() {
+                    let reference = branch.get();
+                    if let Some(target) = reference.target() {
+                        branch_map.entry(target).or_default().push(name.to_string());
+                    }
+                }
+            }
+        }
+    }
+
+    let mut revwalk = repo.revwalk()?;
+    revwalk.push_head()?;
+    revwalk.set_sorting(git2::Sort::TIME)?;
+
+    let mut commits = Vec::new();
+    for id in revwalk.take(50) {
+        let id = id?;
+        let commit = repo.find_commit(id)?;
+        
+        let mut branches = branch_map.get(&id).cloned().unwrap_or_default();
+        
+        // Also check if it's HEAD
+        if let Ok(head) = repo.head() {
+            if head.target() == Some(id) {
+                if !branches.contains(&"HEAD".to_string()) {
+                    branches.insert(0, "HEAD".to_string());
+                }
+            }
+        }
+
+        commits.push(GitCommitInfo {
+            id: id.to_string(),
+            message: commit.message().unwrap_or("").trim().to_string(),
+            author: commit.author().name().unwrap_or("unknown").to_string(),
+            time: commit.time().seconds(),
+            branches,
+        });
+    }
+    Ok(commits)
+}
+pub fn get_branches(path: &Path) -> Result<Vec<crate::models::BranchInfo>, Box<dyn std::error::Error>> {
+    let repo = Repository::open(path)?;
+    let mut branches_info = Vec::new();
+
+    // Iterate through all branches
+    if let Ok(branches) = repo.branches(None) {
+        for branch_res in branches.flatten() {
+            let (branch, branch_type) = branch_res;
+            if let Ok(Some(name)) = branch.name() {
+                let is_remote = branch_type == git2::BranchType::Remote;
+                let is_head = branch.is_head();
+                
+                let mut upstream_name = None;
+                let mut ahead = 0;
+                let mut behind = 0;
+
+                // For local branches, check upstream status
+                if !is_remote {
+                    if let Ok(upstream) = branch.upstream() {
+                        if let Ok(Some(u_name)) = upstream.name() {
+                            upstream_name = Some(u_name.to_string());
+                            
+                            if let (Some(l), Some(u)) = (branch.get().target(), upstream.get().target()) {
+                                if let Ok((a, b)) = repo.graph_ahead_behind(l, u) {
+                                    ahead = a;
+                                    behind = b;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                branches_info.push(crate::models::BranchInfo {
+                    name: name.to_string(),
+                    is_remote,
+                    is_head,
+                    upstream: upstream_name,
+                    ahead,
+                    behind,
+                });
+            }
+        }
+    }
+
+    Ok(branches_info)
 }

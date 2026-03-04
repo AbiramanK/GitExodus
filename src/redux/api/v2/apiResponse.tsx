@@ -41,3 +41,20 @@ export interface BulkResult {
     succeeded: number;
     failed: number;
 }
+
+export interface GitCommitInfo {
+    id: string;
+    message: string;
+    author: string;
+    time: number;
+    branches: string[];
+}
+
+export interface BranchInfo {
+    name: string;
+    is_remote: boolean;
+    is_head: boolean;
+    upstream: string | null;
+    ahead: number;
+    behind: number;
+}

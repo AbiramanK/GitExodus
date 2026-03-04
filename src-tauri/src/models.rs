@@ -44,6 +44,25 @@ pub struct FileDiff {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GitCommitInfo {
+    pub id: String,
+    pub message: String,
+    pub author: String,
+    pub time: i64,
+    pub branches: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct BranchInfo {
+    pub name: String,
+    pub is_remote: bool,
+    pub is_head: bool,
+    pub upstream: Option<String>,
+    pub ahead: usize,
+    pub behind: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct BulkRepoResult {
     pub path: String,
     pub name: String,
