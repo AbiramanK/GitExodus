@@ -95,3 +95,10 @@
 - **Stability**: Backend logic remains highly performant, utilizing direct Git patches for safe operations.
 - **Quality Assurance**: Surpassed the 80% overall test coverage mandate (80.61% statement coverage), validating interaction flows across routing, git endpoints, and view states.
 - **Branding**: Continued refinement of the high-fidelity bird identity across all touchpoints.
+## 2026-03-04
+### Git Log & Branch Management
+- **Improved Git Logs**: Redesigned the repository history view as a premium slide-over side panel. Added support for displaying branch pointers (HEAD, master, origin/remote) directly on commits.
+- **Branch Management**: Added a dedicated "Branches" tab to the logs panel, providing a searchable list of all local and remote branches. Built-in status indicators show ahead/behind counts for local branches tracking upstream remotes.
+- **Backend**: Implemented comprehensive branch analysis in Rust, fetching upstream details and relative commit counts. Exposed new Tauri commands for fetching detailed branch information.
+- **UI/UX**: Implemented a tabbed interface in the side panel with high-fidelity badges, status icons, and search capabilities.
+- **Theme Optimization**: Significantly improved the visibility and contrast of the application in light theme by strengthening core HSL color tokens and refining component-level accents (header backgrounds, hierarchy lines, and status badges).

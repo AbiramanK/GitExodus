@@ -63,7 +63,13 @@
 - [x] Branding: Standardized Undo iconography
 - [x] Quality: Achieve 80%+ Test Coverage for core components
 
+## v0.3.1 Release (In Progress)
+- [x] Feature: Android Studio-style File Explorer Tree View
+- [x] UI: Recursive directory navigation and folder expansion
+- [x] UI: Recursive multi-level selection in Explorer mode
+
 ## Future Roadmap (Planned)
+- [ ] Branch management (Create, Checkout, Delete branches)
 - [ ] Branch management (Create, Checkout, Delete branches)
 - [ ] Detailed commit history view for each repo
 - [ ] Conflict resolution UI for merge/rebase
