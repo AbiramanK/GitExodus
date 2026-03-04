@@ -102,3 +102,4 @@
 - **Backend**: Implemented comprehensive branch analysis in Rust, fetching upstream details and relative commit counts. Exposed new Tauri commands for fetching detailed branch information.
 - **UI/UX**: Implemented a tabbed interface in the side panel with high-fidelity badges, status icons, and search capabilities.
 - **Theme Optimization**: Significantly improved the visibility and contrast of the application in light theme by strengthening core HSL color tokens and refining component-level accents (header backgrounds, hierarchy lines, and status badges).
+- **Test Coverage**: Increased project statement coverage to **80.38%** by implementing comprehensive unit and integration tests for the new `ExplorerTreeView` and `GitLogDialog` components.

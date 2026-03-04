@@ -10,7 +10,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     exclude: ['**/node_modules/**', '**/dist/**', '**/e2e/**', '**/test-results/**'],
     coverage: {
-      provider: 'istanbul',
+      provider: 'v8',
       reporter: ['text-summary', 'text'],
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/main.tsx', 'src/test/**', 'src/api/v2/apiResponse.tsx'],
