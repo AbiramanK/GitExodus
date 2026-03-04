@@ -18,8 +18,10 @@ When finalizing a phase of development, you MUST follow these steps:
     - **Unit & Integration Tests (Backend)**: `cargo test`
     - **E2E Tests**: `npx playwright test`
     - If coverage is below 80% or any test fails, you MUST fix the issue and re-run all tests before proceeding.
-3. **Segment Changes**: Review `git status` and logically group modified files by specific features or responsibilities.
-3. **Stage Incremental Changes**: Stage files incrementally for each logical group.
-4. **Conventional & Atomic Commits**: Commit each staged group separately using a clear, conventional commit message (e.g., `feat: ...`, `fix: ...`, `docs: ...`). Each commit should represent a single atomic change.
-5. **Consistency**: Ensure the commit message adheres to previous project patterns, commitlint rules if applicable, and strict industrial standards.
+3. **Segment & Group Changes**: Review `git status` and logically group modified files by specific features or responsibilities. Commits MUST be grouped by small feature or bug fix nature.
+4. **Segment-by-Segment Staging**: Stage files incrementally for each logical group to ensure atomic changes.
+5. **Atomic Commits & Message Limits**: Commit each staged group separately.
+    - **Message Limit**: The commit message MUST be **less than 50 characters**.
+    - **Message Format**: Use a clear, conventional commit message (e.g., `feat: ...`, `fix: ...`, `docs: ...`).
+    - **Lint Rules**: ALWAYS follow previous project commitlint rules and strict industrial standards.
 6. **Pre-Release Verification**: BEFORE upgrading the version or creating a new release (e.g. creating tags), you MUST verify that the GitHub Actions release workflow works perfectly without any errors by running it **locally** (e.g., using `act`).
